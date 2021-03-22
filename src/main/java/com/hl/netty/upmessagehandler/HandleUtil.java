@@ -134,6 +134,7 @@ public class HandleUtil {
             for (int i = 1; i <=numLength; i++) {
                 String b = elementInfoGroupStr.substring(6, 6+numLength*4).substring((i-1)*4,i*4);
                 a =a+Integer.valueOf(b.substring(0,2))+"."+Integer.valueOf(b.substring(2,4))+"|";
+
             }
             a=a.substring(0,a.length()-1);
             elementInfoGroup.put(IdentifierChartCEnum.getEnumByObj(elementInfoGroupStr.substring(0, 2)),a);

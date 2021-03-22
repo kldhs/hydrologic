@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>设备管理列表</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <link rel="stylesheet" href="../../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../css/font-awesome.min.css">
+  <!--<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">-->
+  <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/monitor.css">
+  <link rel="stylesheet" href="../../plugins/jqgrid/jqGridAutoList.css">
+  <script src="../../libs/jquery.min.js"></script>
+  <script src="../../plugins/layer/layer.js"></script>
+  <script type="text/javascript" src="../../libs/axios.min.js"></script>
+  <script src="../../libs/bootstrap.min.js"></script>
+  <script src="../../libs/vue.min.js"></script>
+  <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+  <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+  <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+  <script src="../../js/common.js"></script>
+  <script src="../../libs/bootstrap-select.min.js"></script>
+</head>
+<body>
+<div id="honghu_cloud" v-cloak class="user-honghu_cloud">
+  <div v-show="showList">
+    <div class="grid-btn" style="height: 100px !important;">
+      <div class="form-group">
+        <div v-if="hasPermission('device:shuttleCar:query')" class=" col-sm-2" style="width: 10.66666667%;">
+          <input type="text" class="form-control" v-model="q.exceCode" @keyup.enter="query" placeholder="异常编号" >
+        </div>
+        <div v-if="hasPermission('device:shuttleCar:query')" class=" col-sm-2" style="width: 10.66666667%;">
+          <input type="text" class="form-control" v-model="q.exceDescribe" @keyup.enter="query" placeholder="异常描述" >
+        </div>
+        <div v-if="hasPermission('device:shuttleCar:query')" class=" col-sm-3" style="width: 20%;">
+          <div class="" style="float: left;margin-top: 7px;">设备类型：</div>
+          <select v-model="q.deviceType" style="height: 34px;width: 120px">
+            <option  value="" >全部</option>
+            <option v-for="item in deviceTypeList" :value="item.sign" :key="item.sign">{{item.describe}}</option>
+          </select>
+        </div>
+        <a v-if="hasPermission('device:shuttleCar:query')" class="btn btn-info" @click="query">查询</a>
+        <a v-if="hasPermission('device:shuttleCar:add')" class="btn btn-success" @click="add"><i class="fa fa-plus"></i>新增</a>
+        <a v-if="hasPermission('device:shuttleCar:add')" class="btn btn-warning" @click="update"><i class="fa fa-pencil-square-o"></i>编辑</a>
+        <a v-if="hasPermission('device:shuttleCar:delete')" class="btn btn-danger" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+        <a v-if="" class="btn btn-warning" @click="back">返回</a>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="jqGrid"></table>
+    </div>
+    <div id="jqGridPager"></div>
+  </div>
+
+  <div v-show="!showList" class="panel panel-default">
+    <div class="panel-heading">{{title}}</div>
+    <form class="form-horizontal" style="width: 935px;">
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>设备类型</div>
+        <div class="col-sm-4">
+          <select v-model="errorCodeExplain.deviceType" class="form-control" @blur="regex('deviceType')">
+            <option v-for="item in deviceTypeList" :value="item.sign" :key="item.sign">{{item.describe}}
+            </option>
+          </select>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!deviceTypeFlag">*设备类型必须选择</span>
+
+        </div>
+        <div class="col-sm-2 control-label"><span class="star">*</span>异常类型</div>
+        <div class="col-sm-4">
+          <select v-model="errorCodeExplain.errorType" class="form-control" >
+            <option  value="warn" >报警</option>
+            <option  value="error" >故障</option>
+          </select>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!errorTypeFlag">*设备类型必须选择</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>异常编号</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="errorCodeExplain.errorId" />
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!errorIdFlag">*请输入正确的IP地址</span>
+        </div>
+        <div class="col-sm-2 control-label"><span class="star">*</span>异常描述</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="errorCodeExplain.errorExplain"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!errorExplainFlag">*请输入正确的端口号</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>是否启用</div>
+        <div class="col-sm-4">
+          <select v-model="errorCodeExplain.isStart" class="form-control" >
+            <option  value="y" >是</option>
+            <option  value="n" >否</option>
+          </select>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isStartFlag">*请输入正确的端口号</span>
+        </div>
+        <div class="col-sm-2 control-label"><span class="star"></span>备注</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="errorCodeExplain.remark"  />
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"></div>
+        <input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+        &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script src="../../js/modules/device/exceptionCodeEdit.js"></script>
+</body>
+</html>

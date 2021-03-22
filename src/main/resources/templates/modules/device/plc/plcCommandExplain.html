@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>设备管理列表</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <link rel="stylesheet" href="../../../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../../css/font-awesome.min.css">
+  <!--<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">-->
+  <link rel="stylesheet" href="../../../plugins/ztree/css/metroStyle/metroStyle.css">
+  <link rel="stylesheet" href="../../../css/main.css">
+  <link rel="stylesheet" href="../../../css/monitor.css">
+  <link rel="stylesheet" href="../../../plugins/jqgrid/jqGridAutoList.css">
+  <script src="../../../libs/jquery.min.js"></script>
+  <script src="../../../plugins/layer/layer.js"></script>
+  <script type="text/javascript" src="../../../libs/axios.min.js"></script>
+  <script src="../../../libs/bootstrap.min.js"></script>
+  <script src="../../../libs/vue.min.js"></script>
+  <script src="../../../plugins/jqgrid/grid.locale-cn.js"></script>
+  <script src="../../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+  <script src="../../../plugins/ztree/jquery.ztree.all.min.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="../../../libs/bootstrap-select.min.js"></script>
+</head>
+<body>
+<div id="honghu_cloud" v-cloak class="user-honghu_cloud">
+  <div v-show="showList">
+    <div class="grid-btn" style="height: 100px !important;">
+      <div class="form-group">
+        <div v-if="hasPermission('device:plc')" class=" col-sm-2" style="width: 10.66666667%;">
+          <input type="text" class="form-control" v-model="q.explain" @keyup.enter="query" placeholder="数据点名称" >
+        </div>
+        <div v-if="hasPermission('device:plc')" class=" col-sm-2" style="width: 10.66666667%;">
+          <input type="text" class="form-control" v-model="q.commandId" @keyup.enter="query" placeholder="指令编号" >
+        </div>
+        <div v-if="hasPermission('device:plc')" class=" col-sm-2" style="width: 10.66666667%;">
+          <input type="text" class="form-control" v-model="q.commandName" @keyup.enter="query" placeholder="指令名称" >
+        </div>
+        <a v-if="hasPermission('device:plc')" class="btn btn-info" @click="query">查询</a>
+        <a v-if="hasPermission('device:plc')" class="btn btn-success" @click="add"><i class="fa fa-plus"></i>新增</a>
+        <a v-if="hasPermission('device:plc')" class="btn btn-warning" @click="update"><i class="fa fa-pencil-square-o"></i>编辑</a>
+        <a v-if="hasPermission('device:plc')" class="btn btn-danger" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="jqGrid"></table>
+    </div>
+    <div id="jqGridPager"></div>
+  </div>
+
+  <div v-show="!showList" class="panel panel-default">
+    <div class="panel-heading">{{title}}</div>
+    <form class="form-horizontal" style="width: 935px;">
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>数据点名称</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="plcCommandExplain.explain" />
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!explainFlag">*请输入正确的数据点名称</span>
+        </div>
+        <div class="col-sm-2 control-label"><span class="star">*</span>指令编号</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="plcCommandExplain.commandId"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!commandIdFlag">*请输入正确的指令编号</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>指令名称</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="plcCommandExplain.commandName" />
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!commandNameFlag">*请输入正确的指令名称</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-2 control-label"></div>
+        <input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+        &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script src="../../../js/modules/device/plc/plcCommandExplain.js"></script>
+</body>
+</html>

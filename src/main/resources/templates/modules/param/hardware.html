@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>管理员列表</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <script type="text/javascript" src="../../libs/axios.min.js"></script>
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../js/common.js"></script>
+</head>
+<body>
+<div id="honghu_cloud" v-cloak class="sysParamConfig-honghu_cloud">
+    <div v-show="showList" class="panel panel-default">
+    <div class="panel-heading">{{title}}</div>
+    <form class="form-horizontal">
+        <div class="form-group">
+            <div class="col-sm-3 control-label"><span class="star">*</span>本系统名称</div>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" v-model="sysParamConfig.localName" readonly />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-3 control-label"><span class="star">*</span>本机IP</div>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" v-model="sysParamConfig.localIp" readonly/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-3 control-label"><span class="star">*</span>WMS对接端口</div>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" v-model="sysParamConfig.localToWms" readonly/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-3 control-label"><span class="star">*</span>单片机对接端口</div>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" v-model="sysParamConfig.localToScm" readonly/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-3 control-label"><span class="star">*</span>WMSIP</div>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" v-model="sysParamConfig.wmsIp" readonly/>
+
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-3 control-label"><span class="star">*</span>WMS端口</div>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" v-model="sysParamConfig.wmsPort" readonly/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-3 control-label"><span class="star">*</span>WMS服务名称</div>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" v-model="sysParamConfig.wmsName" readonly/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-3 control-label">备注</div>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" v-model="sysParamConfig.remark"  readonly/>
+            </div>
+        </div>
+        <div class="form-group"></div>
+        <div v-if="hasPermission('param:hardware:edit')" class="form-group">
+            <div class="col-sm-6 control-label"></div>
+            <input type="button" class="btn btn-warning" @click="update"  value="修改"/>
+        </div>
+    </form>
+</div>
+
+    <div v-show="!showList" class="panel panel-default">
+        <div class="panel-heading">{{title}}</div>
+        <form class="form-horizontal">
+            <div class="form-group">
+                <div class="col-sm-3 control-label"><span class="star">*</span>本系统名称</div>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="sysParamConfig.localName" @change="checkLocalName" />
+                    <span v-show="!isLocalNameValidated" style="color: #ff0a0d; margin-left: 10px">本系统名称不能为空</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-3 control-label"><span class="star">*</span>本机IP</div>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="sysParamConfig.localIp" @change="checkIp"/>
+                    <span v-show="!isIpValidated1" style="color: #ff0a0d; margin-left: 10px">请输入正确的IP地址</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-3 control-label"><span class="star">*</span>WMS对接端口</div>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="sysParamConfig.localToWms" @change="checkPort" />
+                    <span v-show="!isPortValidated1" style="color: #ff0a0d; margin-left: 10px">请输入正确的端口地址</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-3 control-label"><span class="star">*</span>单片机对接端口</div>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="sysParamConfig.localToScm" @change="checkPort"/>
+                    <span v-show="!isScmPortValidated" style="color: #ff0a0d; margin-left: 10px">请输入正确的端口地址</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-3 control-label"><span class="star">*</span>WMSIP</div>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="sysParamConfig.wmsIp" @change="checkIp"/>
+                    <span v-show="!isIpValidated2" style="color: #ff0a0d; margin-left: 10px">请输入正确的IP地址</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-3 control-label"><span class="star">*</span>WMS端口</div>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="sysParamConfig.wmsPort" @change="checkPort"/>
+                    <span v-show="!isPortValidated2" style="color: #ff0a0d; margin-left: 10px">请输入正确的端口地址</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-3 control-label"><span class="star">*</span>WMS服务名称</div>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="sysParamConfig.wmsName" @change="checkWmsName"/>
+                    <span v-show="!isWmsNameValidated" style="color: #ff0a0d; margin-left: 10px">WMS服务名称不能为空</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-3 control-label">备注</div>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="sysParamConfig.remark" />
+                </div>
+            </div>
+            <div class="form-group"></div>
+            <div class="form-group">
+                <div class="col-sm-6 control-label"></div>
+                <input type="button" class="btn btn-primary" @click="saveOrUpdate"  value="确定"/>&nbsp;&nbsp;
+                <input type="button" class="btn btn-warning" @click="toSysParamConfig"  value="取消"/>
+
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script src="../../js/modules/param/sysParamConfig.js"></script>
+</body>
+</html>

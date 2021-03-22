@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>管理员列表</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script type="text/javascript" src="../../libs/axios.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../js/common.js"></script>
+</head>
+<body>
+<div id="honghu_cloud" v-cloak class="user-honghu_cloud">
+    <div v-show="showList">
+        <div class="grid-btn">
+            <div v-if="hasPermission('sys:user:query')" class="form-group col-sm-2">
+                <input type="text" class="form-control" v-model="q.userName" @keyup.enter="query" placeholder="用户名" >
+            </div>
+            <a v-if="hasPermission('sys:user:query')" class="btn btn-info" @click="query">查询</a>
+            <a v-if="hasPermission('sys:user:add')" class="btn btn-success" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+            <a v-if="hasPermission('sys:user:edit')" class="btn btn-warning" @click="update"><i
+                    class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+            <a v-if="hasPermission('sys:user:delete')" class="btn btn-danger" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+        </div>
+        <table id="jqGrid"></table>
+        <div id="jqGridPager"></div>
+    </div>
+
+    <div v-show="!showList" class="panel panel-default">
+        <div class="panel-heading">{{title}}</div>
+        <form class="form-horizontal">
+            <div class="form-group">
+                <div class="col-sm-2 control-label"><span class="star">*</span>用户名</div>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" v-model="user.userName" placeholder="登录账号"  @blur="regex('username')"/>
+                </div>
+                <span class="star" v-if="!usernameFlag" >*用户名不能为空</span>
+            </div>
+            <div class="form-group" v-if="title==='新增'">
+                <div class="col-sm-2 control-label"><span class="star">*</span>密码</div>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" v-model="user.password" placeholder="密码(数字和字母)" @blur="regex('password')"/>
+                </div>
+                <span class="star" v-if="!passwordFlag" >*密码不能为空且只能包含数字和字母</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label"><span class="star">*</span>邮箱</div>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" v-model="user.email" placeholder="邮箱" @blur="regex('email')"/>
+                </div>
+                <span class="star" v-if="!emailFlag" >*邮箱不能为空且保证格式正确</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label"><span class="star">*</span>手机号</div>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" v-model="user.mobile" placeholder="手机号" @blur="regex('mobile')"/>
+                </div>
+                <span class="star" v-if="!mobileFlag" >*手机号不能为空且保证格式正确</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label"><span class="star">*</span>选择部门</div>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" style="cursor:pointer;" v-model="user.dept" @click="departmentTree" readonly="readonly" />
+<!--                    <input type="text" class="form-control" style="cursor:pointer;"  readonly="readonly" />-->
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label"><span class="star">*</span>角色</div>
+                <div class="col-sm-10">
+                    <label v-for="role in roleList" class="radio-inline">
+                        <input type="radio" name="roleId" :value="role.roleId" v-model="role.roleId">{{role.roleName}}
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label"><span class="star">*</span>状态</div>
+                <div class="col-sm-10">
+                    <label class="radio-inline">
+                        <input type="radio" name="status" value="0" v-model="user.status"/> 禁用
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="status" value="1" v-model="user.status"/> 正常
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label"></div>
+                <input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+                &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 选择部门 -->
+<div id="departmentLayer" style="display: none;padding:10px;">
+    <ul id="departmentTree" class="ztree"></ul>
+</div>
+<script src="../../js/modules/sys/user.js"></script>
+</body>
+</html>

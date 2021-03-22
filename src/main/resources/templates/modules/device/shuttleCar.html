@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>设备管理列表</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <link rel="stylesheet" href="../../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../css/font-awesome.min.css">
+  <!--<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">-->
+  <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/monitor.css">
+  <link rel="stylesheet" href="../../plugins/jqgrid/jqGridAutoList.css">
+  <script src="../../libs/jquery.min.js"></script>
+  <script src="../../plugins/layer/layer.js"></script>
+  <script type="text/javascript" src="../../libs/axios.min.js"></script>
+  <script src="../../libs/bootstrap.min.js"></script>
+  <script src="../../libs/vue.min.js"></script>
+  <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+  <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+  <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+  <script src="../../js/common.js"></script>
+  <script src="../../libs/bootstrap-select.min.js"></script>
+  <style>
+    .map-div {
+      background: rgba(51, 51, 51, 0.5);
+      width: 55px;
+      height: 40px;
+      line-height: 40px;
+    }
+
+    /*.map-td-box {*/
+    /*background: rgba(51, 51, 51, 0.5);*/
+    /*z-index: 2;*/
+    /*height:440px*/
+    /*}*/
+    /*.map-td{*/
+    /*box-shadow: 10px 10px 5px #888888;*/
+    /*}*/
+
+  </style>
+</head>
+<body>
+<div id="honghu_cloud" v-cloak class="user-honghu_cloud">
+  <div v-show="showList">
+    <div class="grid-btn" style="height: 150px !important;">
+      <div class="form-group">
+        <div v-if="hasPermission('device:shuttleCar:query')" class=" col-sm-2" style="width: 10.66666667%;">
+          <input type="text" class="form-control" v-model="q.deviceId" @keyup.enter="query" placeholder="设备id" @blur="regexSelect()">
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!selectFlag">*设备编号只能是整数</span>
+        </div>
+        <div v-if="hasPermission('device:shuttleCar:query')" class=" col-sm-3" style="width: 20%;">
+          <div class="" style="float: left;margin-top: 7px;">设备状态：</div>
+          <select v-model="q.shuttleStatus" style="height: 34px;width: 120px">
+            <option value="all" selected="true">全部</option>
+            <option v-for="item in wcsStatusList" :value="item.sign" :key="item.sign">{{item.describe}}</option>
+          </select>
+        </div>
+        <a v-if="hasPermission('device:shuttleCar:query')" class="btn btn-info" @click="query">查询</a>
+        <a v-if="hasPermission('device:shuttleCar:add')" class="btn btn-success" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+        <a v-if="hasPermission('device:shuttleCar:edit')" class="btn btn-warning" @click="update"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+        <a v-if="hasPermission('device:shuttleCar:delete')" class="btn btn-danger" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+        <a v-if="hasPermission('device:shuttleCar:carDuty')" class="btn btn-info" @click="toCarDuty">车辆职责</a>
+      </div>
+      <div class="form-group">
+        <a v-if="hasPermission('device:shuttleCar:charge')" class="btn btn-warning startCharge" @click="generateChargeTask" style="margin-left: 10px">一键充电</a>
+<!--        <a v-if="hasPermission('device:shuttleCar:uncharge')" v-if="chargeYorN" class="btn btn-warning stopCharge">结束充电</a>-->
+        <a v-if="hasPermission('device:shuttleCar:chargedetail')" class="btn btn-info" @click="toDistrict">充电明细</a>
+        <a v-if="hasPermission('device:shuttleCar:callback')" class="btn btn-warning startCharge" @click="callBackAllCar">一键召回</a>
+        <a v-if="hasPermission('device:shuttleCar:pause')" class="btn btn-danger startCharge" @click="sendPathPause">路径下发暂停</a>
+        <a v-if="hasPermission('device:shuttleCar:recover')" class="btn btn-success startCharge" @click="sendPathRecover">路径下发恢复</a>
+        <a v-if="hasPermission('device:shuttleCar:clearalarm')" class="btn btn-info startCharge" @click="clearalarm">清除报警故障</a>
+        <a  class="btn btn-info startCharge" @click="unLockCar">解锁小车</a>
+      </div>
+    </div>
+    <div > <!--style="overflow-x:auto"-->
+      <table id="jqGrid"></table>
+    </div>
+    <div id="jqGridPager"></div>
+  </div>
+
+  <div v-show="!showList" class="panel panel-default">
+    <div class="panel-heading">{{title}}</div>
+    <form class="form-horizontal" style="width: 935px;">
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>设备编号</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.deviceId" @blur="regex('deviceId')"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!deviceIdFlag">*设备编号不能为空且只能是整数</span>
+        </div>
+
+        <div class="col-sm-2 control-label"><span class="star">*</span>设备名称</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.deviceName" @blur="regex('deviceName')" placeholder="不能为空"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!deviceNameFlag">*设备名不能为空</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>所在仓库</div>
+        <div class="col-sm-4">
+          <select v-model="shuttleCar.warehouseId" class="form-control" @blur="regex('warehouseId')">
+            <option v-for="item in warehouseList" :value="item.warehouseId" :key="item.warehouseId">{{item.warehouseName}}
+            </option>
+          </select>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!warehouseIdFlag">*仓库必须选择</span>
+
+        </div>
+        <div class="col-sm-2 control-label"><span class="star">*</span>设备状态(WCS)</div>
+        <div class="col-sm-4">
+          <select v-model="shuttleCar.hexBcdM1234UpFrameEnum" class="form-control">
+            <option v-for="item in wcsStatusList" :value="item.sign" :key="item.sign">
+              {{item.describe}}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>设备ip</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.shuttleIp" @blur="regex('shuttleIp')" placeholder="不能为空"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!shuttleIpFlag">*请输入正确的IP地址</span>
+        </div>
+        <div class="col-sm-2 control-label"><span class="star">*</span>设备端口</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.shuttlePort" @blur="regex('shuttlePort')" placeholder="不能为空"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!shuttlePortFlag">*请输入正确的端口号</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>安全电量</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.safeElectricity" @blur="regex('safeElectricity')" placeholder="不能为空，大于0，小于100"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!safeElectricityFlag">*请输入正确的安全电量,大于0小于100的整数</span>
+        </div>
+        <div class="col-sm-2 control-label"><span class="star">*</span>最大电量</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.maxElectricity" @blur="regex('maxElectricity')" placeholder="不能为空，大于0，小于100"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!maxElectricityFlag">*请输入正确的最大电量,大于0小于100的整数</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>最小电量</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.minElectricity" @blur="regex('minElectricity')" placeholder="不能为空，大于0，小于100"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!minElectricityFlag">*请输入正确的最小电量,大于0小于100的整数</span>
+        </div>
+
+        <div class="col-sm-2 control-label"><span class="star">*</span>X坐标</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.x" @blur="regex('x')" placeholder="不能为空，为整数"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!xFlag">*请输入正确的x坐标,为整数</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>Y坐标</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.y" @blur="regex('y')" placeholder="不能为空，为整数"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!yFlag">*请输入正确的y坐标,为整数</span>
+        </div>
+
+        <div class="col-sm-2 control-label"><span class="star">*</span>Z坐标</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.z" @blur="regex('z')" placeholder="不能为空，为整数"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!zFlag">*请输入正确的z坐标,为整数</span>
+        </div>
+      </div>
+
+<!--      <div class="form-group">-->
+<!--        <div class="col-sm-2 control-label"><span class="star">*</span>设备职责</div>-->
+<!--        &lt;!&ndash;新增&ndash;&gt;-->
+<!--        <div class="col-sm-4" v-show="showAndorUpdate" @change="andDutyType">-->
+<!--          <select v-model="q.dutyType" class="form-control">-->
+<!--            <option v-for="item in dutyTypeList" :value="item.value" :key="item.value">{{item.label}}</option>-->
+<!--          </select>-->
+<!--        </div>-->
+<!--        &lt;!&ndash; 编辑&ndash;&gt;-->
+<!--        <div class="col-sm-4" v-show="!showAndorUpdate">-->
+<!--          <select v-model="dutyDistribution.dutyType" class="form-control">-->
+<!--            <option v-for="item in dutyTypeList" :value="item.value" :key="item.value">{{item.label}}</option>-->
+<!--          </select>-->
+
+<!--        </div>-->
+<!--        <div v-if="dutyDistribution.dutyType==='area'">-->
+<!--          <div class="col-sm-2 control-label"><span class="star">*</span>库区编号</div>-->
+<!--          <div class="col-sm-4">-->
+<!--            <input type="text" class="form-control" v-model="dutyDistribution.districtId"/>-->
+<!--          </div>-->
+<!--        </div>-->
+
+
+
+<!--        <div v-if="dutyDistribution.dutyType==='taskType'">-->
+<!--          <div class="col-sm-2 control-label"><span class="star">*</span>任务类型</div>-->
+<!--          <div class="col-sm-4">-->
+<!--&lt;!&ndash;            <input type="text" class="form-control" v-model="dutyDistribution.taskType" @blur="regex('dutyType')"/>&ndash;&gt;-->
+<!--            <select v-model="q.taskType" class="form-control">-->
+<!--              <option v-for="item in typeList" :value="item.value" :key="item.value">{{item.label}}</option>-->
+<!--            </select>-->
+<!--          </div>-->
+<!--        </div>-->
+
+
+<!--        <div v-if="dutyDistribution.dutyType==='gateway'">-->
+<!--          <div class="col-sm-2 control-label"><span class="star">*</span>出入库口坐标</div>-->
+<!--          <div class="col-sm-4">-->
+<!--            <input type="text" class="form-control" v-model="dutyDistribution.coordinateXyz"/>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        <div v-if="dutyDistribution.dutyType==='taskPeak'">-->
+<!--          <div class="col-sm-2 control-label"><span class="star">*</span>区域任务峰值</div>-->
+<!--          <div class="col-sm-4">-->
+<!--            <input type="text" class="form-control" v-model="dutyDistribution.taskPeak"/>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--      </div>-->
+<!--      <div class="form-group">-->
+<!--        <div v-if="dutyDistribution.dutyType==='taskType'">-->
+<!--            <div class="col-sm-2 control-label"><span class="star">*</span>库区编号</div>-->
+<!--            <div class="col-sm-4">-->
+<!--              <input type="text" class="form-control" v-model="dutyDistribution.districtId"/>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--      </div>-->
+
+
+      <div class="form-group">
+        <div class="col-sm-2 control-label">绑定充电桩</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.chargerId" @click="toChargerNode" placeholder="点击选取充电桩"/>
+        </div>
+
+        <div class="col-sm-2 control-label">绑定缓存位</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="shuttleCar.cacheBit" @click="toCacheBitNode" placeholder="点击选取缓存位"/>
+        </div>
+      </div>
+      <div class="modal fade" id="storageInfoWindow" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div class="form-group" style="margin-bottom: auto;">
+                <div v-show="flag===1">
+                  <div class="col-sm-2 control-label">绑定充电桩</div>
+                  <div class="col-sm-3">
+                    <input type="text" class="form-control" v-model="shuttleCar.chargerId"
+                           @click="toChargerNode" placeholder="点击选取充电桩"/>
+                  </div>
+                </div>
+                <div v-show="flag===2">
+                  <div class="col-sm-2 control-label">绑定缓存位</div>
+                  <div class="col-sm-3">
+                    <input type="text" class="form-control" v-model="shuttleCar.cacheBit"
+                           @click="toCacheBitNode" placeholder="点击选取缓存位"/>
+                  </div>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="col-sm-12"
+                   style="text-align:left;width: 180px;height: 30px;padding: 7px;margin: 0px;">
+                <div class="type-background-color" style="background:#ec971f;">
+                </div>
+                <div class="type-font"><span>充电桩</span></div>
+                <div class="type-background-color" style="background:#800080;">
+                </div>
+                <div class="type-font"><span>缓存位</span></div>
+              </div>
+              <div style="float: right">
+                <div class="form-group" style="float: right;margin-bottom: 0px">
+                  <select v-model="q.floor" class="form-control" style="float: right;" @blur="getWarehouseMap">
+                    <option v-for="item in floorList" @click="getWarehouseMap" :value="item" :key="item">{{item}}层</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-body">
+              <div class="form-group" style="height: 440px">
+                <!--<div class="col-sm-2 control-label"></div>-->
+                <div class="col-sm-12 control-label"
+                     style="float:left; white-space: nowrap; height:440px; overflow:auto">
+                  <!--position:absolute;-->
+                  <table style="display: inline-block;">
+                    <tr v-for='items in storageInfo'>
+                      <template v-for='item in items'>
+                        <td class="map-td map-td-storage"
+                            v-if="item.storageType === 'storage'&& item.isCacheBit==='n'">
+                          <div class="map-div">{{"("+item.x+","+item.y+")"}}</div>
+                        </td>
+                        <td class="map-td map-td-road" v-else-if="item.storageType === 'road'">
+                          <div class="map-div"> {{"("+item.x+","+item.y+")"}}</div>
+                        </td>
+                        <td class="map-td map-td-ban"
+                            v-else-if="item.storageType === 'ban'">
+                          <div class="map-div"></div>
+                        </td>
+                        <td class="map-td map-td-in" v-else-if="item.storageType === 'in'">
+                          <div class="map-div"> {{"("+item.x+","+item.y+")"}}</div>
+                        </td>
+                        <td class="map-td map-td-out" v-else-if="item.storageType === 'out'">
+                          <div class="map-div">{{"("+item.x+","+item.y+")"}}</div>
+                        </td>
+                        <td class="map-td map-td-hoister"
+                            v-else-if="item.storageType === 'hoister'">
+                          <div class="map-div"> {{"("+item.x+","+item.y+")"}}</div>
+                        </td>
+                        <td class="map-td map-td-charger"
+                            v-else-if="item.storageType === 'charger'"
+                            @click="getlocation(item,'charger')" @mouseover="enter(item,'charger')"
+                            :title="message">
+                          {{"("+item.x+","+item.y+")"}}
+                        </td>
+                        <td class="map-td map-td-cacheBit"
+                            v-else-if="item.storageType === 'storage' && item.isCacheBit==='y'"
+                            @click="getlocation(item,'cacheBit')" @mouseover="enter(item,'cacheBit')"
+                            :title="message">
+                          {{"("+item.x+","+item.y+")"}}
+                        </td>
+                        <td class="map-td map-td-null" v-else>
+                          <div class="map-div">{{"("+item.x+","+item.y+")"}}</div>
+                        </td>
+                      </template>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        function storageInfoConfirm() {
+          $("#storageInfoWindow").modal("hide");
+        }
+      </script>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"></div>
+        <input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+        &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script src="../../js/modules/device/shuttleCar.js"></script>
+</body>
+</html>

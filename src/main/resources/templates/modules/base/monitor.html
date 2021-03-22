@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>仓库监控</title>
+    <script type="text/javascript" src="../../libs/vue.min.js"></script>
+    <script type="text/javascript" src="../../libs/axios.min.js"></script>
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../css/monitor.css">
+    <link rel="stylesheet" href="../../css/jquery.contextMenu.css">
+    <script type="text/javascript" src="../../libs/axios.min.js"></script>
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../libs/axios.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../js/common.js"></script>
+    <script type="text/javascript" src="../../libs/jquery.contextMenu.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+    <div class="grid-btn" style="text-align:right">
+
+        <div style="text-align:right;width: 1200px;float: left;height: 40px;padding: 0px;margin-right: 20px;">
+            <div class="form-group" style="float: left">
+                <div class="" style="float: left;margin-top: 7px;">任务类型：</div>
+                <select v-model="genTask.taskType" class="form-control" style="float:right;margin-right: 30px;width: 80px;" @change="clear">
+                    <option v-for="item in typeList" :value="item.value" :key="item.value" >{{item.label}}</option>
+                </select>
+            </div>
+
+            <div class="input-group" v-if="genTask.taskType==='in'||genTask.taskType==='out'||genTask.taskType==='move'" style="width: 150px;float: left;margin-right: 25px">
+                <span class="input-group-btn">
+						<button class="btn btn-default" type="button" @click="toStartNode">
+							起点
+						</button>
+				</span>
+                <input type="text" class="form-control" v-model="q.startNode" @click="toStartNode" onfocus=this.blur()>
+            </div>
+            <div class="input-group" v-if="genTask.taskType==='in'||genTask.taskType==='out'||genTask.taskType==='move'||genTask.taskType==='shunt'" style="width: 150px;float: left;margin-right: 25px">
+                <span class="input-group-btn">
+						<button class="btn btn-default" type="button" @click="toEndNode">
+							终点
+						</button>
+				</span>
+                <input type="text" class="form-control" v-model="q.endNode" @click="toEndNode" onfocus=this.blur()>
+            </div>
+            <div class="input-group" v-if=" genTask.taskType==='in'||genTask.taskType==='out'" style="width: 150px;float: left;margin-right: 25px">
+                <span class="input-group-btn">
+						<button class="btn btn-default" type="button">
+							托盘号
+						</button>
+				</span>
+                <input type="text" class="form-control" v-model="genTask.palletId">
+            </div>
+
+            <div class="form-group" style="float: left">
+                <div class="" style="float: left;margin-top: 7px;">设备编号：</div>
+                <select v-model="genTask.deviceId" class="form-control" style="float:right;margin-right: 50px;width: 95px;">
+                    <option :value="null" selected="selected">请选择</option>
+                    <option v-for="item in devicesAllFloors" :value="item.deviceId" :key="item.deviceId">{{item.deviceId}}</option>
+                </select>
+            </div>
+
+            <button v-if="hasPermission('base:monitor:creattask')" class="btn btn-default" style="float: left" @click="generateTask">
+                生成任务
+            </button>
+
+            <div style="float: right">
+                <div class="form-group" style="float: right">
+                    <select v-model="q.floor" class="form-control" style="float: right;" >
+                        <option v-for="item in floorList" :value="item" :key="item" >{{item}}层</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="text-align:left;width: 619px;height: 40px;padding: 7px;margin: 0px;">
+            <div class="type-background-color " style="box-shadow:-0px 0px 10px  rgba(0, 0, 0, .5)inset;">
+            </div>
+            <div class="type-font"><span>禁用</span></div>
+            <div class="type-background-color" style="background:#31b0d5;">
+            </div>
+            <div class="type-font"><span>货位无货</span></div>
+            <div class="type-background-color" style="background:#0E2D5F;">
+            </div>
+            <div class="type-font"><span>货位有货</span></div>
+            <div class="type-background-color" style="background:#449d44;">
+            </div>
+            <div class="type-font"><span>坡道</span></div>
+            <div class="type-background-color" style="background:#00ffff;">
+            </div>
+            <div class="type-font"><span>入库口</span></div>
+            <div class="type-background-color" style="background:#00ff00;">
+            </div>
+            <div class="type-font"><span>出库口</span></div>
+            <div class="type-background-color" style="background:#c9302c;">
+            </div>
+            <div class="type-font"><span>提升机</span></div>
+            <div class="type-background-color" style="background:#ec971f;">
+            </div>
+            <div class="type-font"><span>充电桩</span></div>
+            <div class="type-background-color" style="background:#800080;">
+            </div>
+            <div class="type-font"><span>缓存位</span></div>
+        </div>
+    </div>
+
+    <div>
+        <div style="white-space: nowrap;">
+            <table style="display: inline-block;">
+                <tr v-for='aa in info'>
+                    <template v-for='(bb,index) in aa'>
+                        <td class="map-td map-td-storage" :style="{ 'active1':style1 }" v-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&& bb.lockMark!='lock'&&bb.status==='empty'" @click="getlocation(bb)" @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-road" v-else-if="bb.storageType === 'road'&&bb.status==='empty'" @click="getlocation(bb)" @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-ban" v-else-if="bb.storageType === 'ban'" @click="getlocation(bb)" @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-in" v-else-if="bb.storageType === 'in'" @click="getlocation(bb)" @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-out" v-else-if="bb.storageType === 'out'" @click="getlocation(bb)"  @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-hoister" v-else-if="bb.storageType === 'hoister'" @click="getlocation(bb)" @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-charger" v-else-if="bb.storageType === 'charger'" @click="getlocation(bb)" @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-cacheBit" v-else-if="bb.storageType === 'storage' && bb.isCacheBit==='y'"   @click="getlocation(bb)"  @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-storage" v-else-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&&bb.lockMark==='lock'"   @click="getlocation(bb)"  @mouseover="hover(bb)" :title="message">lock</td>
+                        <td class="map-td map-td-exist-storage" v-else-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&&bb.status==='exist'"   @click="getlocation(bb)"  @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-road-exist" v-else-if="bb.storageType === 'road'&&bb.status==='exist'" @click="getlocation(bb)" @mouseover="hover(bb)" :title="message"></td>
+                        <td class="map-td map-td-signIn-storage" v-else-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&&bb.status==='signIn'"   @click="getlocation(bb)"  @mouseover="hover(bb)" :title="message">si</td>
+                        <td class="map-td map-td-existOut-storage" v-else-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&&bb.status==='signOut'"   @click="getlocation(bb)"  @mouseover="hover(bb)" :title="message">so</td>
+                        <!--<td class="map-td map-td-inout" v-else-if="bb.nodeType === 'IN_OUT'" @click="getlocation(bb)" @contextmenu.prevent="rightClick(bb)" @mouseover="hover(bb)" :title="message"></td>-->
+                        <td class="map-td map-td-null" v-else  @click="getlocation(bb)"  @mouseover="hover(bb)" :title="message"></td>
+                        <!--:class="{ 'active1':style1 }"-->
+                    </template>
+                </tr>
+            </table>
+            <div style="display: inline-block;width: 200px">
+            </div>
+        </div>
+    </div>
+
+    <div >
+        <div class="box">
+        <query query-title="编辑货位类型" query-confirm="确定" query-cancel="取消" v-if="!isHide" @y="confirm()" @n="cancel()">
+        </query>
+        div>
+        </div>
+    </div>
+
+    <div id="layer" style="display:none" @click="hideLayer" @contextmenu.prevent></div>
+    <div style="height: 160px;">
+    </div>
+
+</div>
+<script src="../../js/modules/sys/monitor.js"></script>
+</body>
+</html>

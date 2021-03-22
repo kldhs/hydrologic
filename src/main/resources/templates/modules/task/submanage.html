@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>管理员列表</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <!--<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">-->
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/jqGridAutoList.css">
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script type="text/javascript" src="../../libs/axios.min.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../js/common.js"></script>
+    <script src="../../libs/bootstrap-select.min.js"></script>
+</head>
+<body>
+<div id="honghu_cloud" v-cloak  class="user-honghu_cloud">
+
+    <div  class="panel panel-default">
+        <div class="panel-heading">{{title}}</div>
+        <div class="form-horizontal" style="width:1100px">
+            <div class="form-group">
+                <div class="col-sm-2 control-label" >任务编号</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="q.taskId" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">WMS任务编号</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.wmsId" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">任务类型</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.taskType" readonly/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">仓库编号</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.warehouseId" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">库区编号</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.districtId" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">优先级</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.priority" readonly/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-2 control-label">起始位置</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.startLocation" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">目的位置</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.endLocation" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">实际取货位置</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.startLocationReality" readonly/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-2 control-label">实际目的位置</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.endLocationReality" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">计划起始位置X</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.startX" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">计划起始位置Y</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.startY" readonly/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">计划起始位置Z</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.startZ" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">计划目的位置X</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.endX" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">计划目的位置Y</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.endY" readonly/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">计划目的位置Z</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.endZ" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">托盘编号</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.palletId" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">接收时间</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.receiveTime" readonly/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">物料级别</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.materialGrade" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">开始时间</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.startTime" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">结束时间</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.endTime" readonly/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-2 control-label">排队号</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.queueNumber" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">结果是否回传</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.isSend" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">是否异常</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.isError" readonly/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">备注</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.remark" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">录入日期</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.insertDate" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">录入人</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.insertId" readonly/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">更新日期</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.updateDate" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">更新人</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.updateId" readonly/>
+                </div>
+                <div class="col-sm-2 control-label">设备编号</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.deviceId" readonly/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-2 control-label">任务状态</div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" v-model="taskInfo.statusDescribe" readonly/>
+<!--                    <select v-model="taskInfo.taskStatus" class="form-control" id="status">-->
+<!--                        <option v-for="item in statusList" :value="item.value" :key="item.value" >{{item.label}}</option>-->
+<!--                    </select>-->
+                </div>
+<!--                <div v-show="taskInfo.taskStatus=='waitExe'">-->
+<!--                    <div class="col-sm-2 control-label" >实际取货位置</div>-->
+<!--                    <div class="col-sm-2">-->
+<!--                        <input type="text" class="form-control" v-model="taskInfo.startLocationReality" />-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="col-sm-2 control-label" >车辆当前位置</div>-->
+<!--                    <div class="col-sm-2" >-->
+<!--                        <input type="text" class="form-control" v-model="storageInfo.storageId" />-->
+<!--                    </div>-->
+<!--                </div>-->
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-2 control-label"></div>
+                <!--<input type="button" class="btn btn-info" @click="update" value="查询"/>&nbsp;&nbsp;-->
+<!--                <input type="button" class="btn btn-primary" @click="saveAndUpdate" value="提交"/>&nbsp;&nbsp;-->
+                <input v-if="hasPermission('task:manage')" type="button" class="btn btn-primary" @click="resume" value="一键恢复（IGCS）"/>&nbsp;&nbsp;
+                &nbsp;&nbsp;
+                <!--<input type="button" class="btn btn-success" @click="update" value="子任务修改"/>-->
+                &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="toManage" value="返回"/>
+            </div>
+        </div>
+    </div>
+
+        <table id="jqGrid"></table>
+        <div id="jqGridPager"></div>
+
+
+
+</div>
+<!-- 选择部门 -->
+<div id="deptLayer" style="display: none;padding:10px;">
+    <ul id="deptTree" class="ztree"></ul>
+</div>
+
+<script src="../../js/modules/task/submanage.js"></script>
+</body>
+</html>

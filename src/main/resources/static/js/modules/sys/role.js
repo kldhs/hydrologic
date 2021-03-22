@@ -1,0 +1,202 @@
+$(function () {
+    $("#jqGrid").jqGrid({
+        url: baseURL + 'role/list',
+        datatype: "json",
+        colModel: [
+			{ label: '角色ID', name: 'roleId', index: "role_id", width: 45, key: true },
+			{ label: '角色名称', name: 'roleName', index: "role_name", width: 75 },
+			{ label: '创建时间', name: 'insertDate', index: "insertDate", width: 90}
+        ],
+		viewrecords: true,
+        height: 385,
+        rowNum: 10,
+		rowList : [10,30,50],
+        rownumbers: false, 
+        rownumWidth: 25, 
+        autowidth:true,
+        multiselect: true,
+        pager: "#jqGridPager",
+        jsonReader : {
+            root: "page.list",
+            page: "page.currPage",
+            total: "page.totalPage",
+            records: "page.totalCount"
+        },
+        prmNames : {
+            page:"page", 
+            rows:"limit", 
+            order: "order"
+        },
+        gridComplete:function(){
+        	//隐藏grid底部滚动条
+        	$("#jqGrid").closest(".ui-jqgrid-bdiv").css({ "overflow-x" : "hidden" }); 
+        }
+    });
+});
+
+//菜单树
+var menu_ztree;
+var menu_setting = {
+	data: {
+		simpleData: {
+			enable: true,
+			idKey: "menuId",
+			pIdKey: "parentId",
+			rootPId: -1
+		},
+		key: {
+			url:"nourl",
+			name: "menuName"
+		}
+	},
+	check:{
+		enable:true,
+		nocheckInherit:true
+	}
+};
+
+var vm = new Vue({
+	el:'#honghu_cloud',
+	data:{
+		q:{
+			roleName: null
+		},
+		showList: true,
+		title:null,
+		systemTypes:null,
+		role:{
+
+		},
+		rolenameFlag:true
+	},
+	methods: {
+		query: function () {
+			vm.reload();
+		},
+		add: function(){
+			vm.showList = false;
+			vm.title = "新增";
+			vm.getMenuTree(null);
+			vm.rolenameFlag=true;
+			vm.getAllSystemTypes();
+		},
+		update: function () {
+			var roleId = getSelectedRow();
+			if(roleId == null){
+				return ;
+			}
+			
+			vm.showList = false;
+            vm.title = "修改";
+            vm.getMenuTree(roleId);
+			vm.rolenameFlag=true;
+		},
+		del: function () {
+			var roleIds = getSelectedRows();
+			if(roleIds == null){
+				return ;
+			}
+			
+			confirm('确定要删除选中的记录？', function(){
+				$.ajax({
+					type: "POST",
+				    url: baseURL + "role/delete",
+                    contentType: "application/json",
+				    data: JSON.stringify(roleIds),
+				    success: function(r){
+						if(r.code == 0){
+							alert('操作成功', function(){
+								vm.reload();
+							});
+						}else{
+							alert(r.msg);
+						}
+					}
+				});
+			});
+		},
+		getRole: function(roleId){
+            $.get(baseURL + "role/info/"+roleId, function(r){
+            	vm.role = r.role;
+                
+                //勾选角色所拥有的菜单
+    			var menuIds = vm.role.menuIdList;
+    			for(var i=0; i<menuIds.length; i++) {
+    				var node = menu_ztree.getNodeByParam("menuId", menuIds[i]);
+    				menu_ztree.checkNode(node, true, false);
+    			}
+    		});
+		},
+		saveOrUpdate: function () {
+			if(!vm.rolenameFlag ){
+				alert("请检查并填入正确信息");
+				return;
+			}
+			console.log(vm.role);
+			if(vm.role.roleName == null || vm.role.roleName === ""){
+				vm.rolenameFlag=false;
+				return;
+			}
+			//获取选择的菜单
+			var nodes = menu_ztree.getCheckedNodes(true);
+			var menuIdList = new Array();
+			for(var i=0; i<nodes.length; i++) {
+				menuIdList.push(nodes[i].menuId);
+			}
+			vm.role.menuIdList = menuIdList;
+			
+			var url = vm.role.roleId == null ? "role/save" : "role/update";
+			$.ajax({
+				type: "POST",
+			    url: baseURL + url,
+                contentType: "application/json",
+			    data: JSON.stringify(vm.role),
+			    success: function(r){
+			    	if(r.code === 0){
+						alert('操作成功', function(){
+							vm.reload();
+						});
+					}else{
+						alert(r.msg);
+					}
+				}
+			});
+		},
+		getMenuTree: function(roleId) {
+			//加载菜单树
+			$.get(baseURL + "menu/list", function(r){
+				menu_ztree = $.fn.zTree.init($("#menuTree"), menu_setting, r);
+				//展开所有节点
+				menu_ztree.expandAll(true);
+				
+				if(roleId != null){
+					vm.getRole(roleId);
+				}
+			});
+	    },
+		//输入信息非空验证及正则验证。
+		regex: function(msg){
+			if(msg === 'rolename'){
+				console.log(vm.role.roleName);
+				if(vm.role.roleName == null || vm.role.roleName === ""){
+					vm.rolenameFlag=false;
+				}else{
+					vm.rolenameFlag=true;
+				}
+			}
+		},
+	    reload: function () {
+	    	vm.showList = true;
+			var page = $("#jqGrid").jqGrid('getGridParam','page');
+			$("#jqGrid").jqGrid('setGridParam',{ 
+                postData:{'roleName': vm.q.roleName},
+                page:page
+            }).trigger("reloadGrid");
+		},
+		getAllSystemTypes: function () {
+			$.get(baseURL + "role/getAllSystemTypes/", function (r) {
+				vm.systemTypes = r.systemTypes;
+			});
+		},
+	}
+});

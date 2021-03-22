@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html style="overflow-x: hidden;">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <!--    <link rel="stylesheet" href="css/AdminLTE.min.css">-->
+  <link rel="stylesheet" href="css/all-skins.min.css">
+  <!--    <link rel="stylesheet" href="plugins/jqgrid/jqGridAutoList.css">-->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/easyui.css">
+  <link rel="stylesheet" href="css/view.css">
+  <link rel="stylesheet" href="css/icon.css">
+  <link rel="stylesheet" href="css/monitor.css">
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+</head>
+<body>
+<div id="app">
+  <div class="view-button" style="text-align:right">
+    <div style="text-align:right;width: 1200px;float: left;height: 40px;padding: 0px;margin-right: 20px;">
+      <div class="form-group" style="float: left">
+        <div class="" style="float: left;margin-top: 7px;font-size: 15px">监控类型：</div>
+        <select v-model="q.monitorType" class="form-control"
+                style="float:right;margin-right: 30px;width: 95px;">
+          <option value="">全部</option>
+          <option v-for="item in monitorTypeList" :value="item.sign" :key="item.sign">{{item.describe}}
+          </option>
+        </select>
+      </div>
+      <div class="form-group" style="float: left">
+        <div class="" style="float: left;margin-top: 7px;font-size: 15px">监控层数：</div>
+        <select v-model="q.floor" class="form-control" style="float:right;margin-right: 50px;width: 95px;">
+          <option v-for="item in floorList" :value="item" :key="item">{{item}}层</option>
+        </select>
+      </div>
+      <a class="btn btn-info" @click="refreshView" style="float: left">查询</a>
+    </div>
+  </div>
+  <div class="view-map">
+    <div style="text-align:left;width: 1200px;height: 60px;padding: 7px;margin: 0px;">
+      <div class="type-background-color " style="box-shadow:-0px 0px 10px  rgba(0, 0, 0, .5)inset;">
+      </div>
+      <div class="type-font"><span>禁用</span></div>
+      <div class="type-background-color" style="background:#31b0d5;">
+      </div>
+      <div class="type-font"><span>货位无货</span></div>
+      <div class="type-background-color" style="background:#0E2D5F;">
+      </div>
+      <div class="type-font"><span>货位有货</span></div>
+      <div class="type-background-color" style="background:#449d44;">
+      </div>
+      <div class="type-font"><span>坡道</span></div>
+      <div class="type-background-color" style="background:#00ffff;">
+      </div>
+      <div class="type-font"><span>入库口</span></div>
+      <div class="type-background-color" style="background:#00ff00;">
+      </div>
+      <div class="type-font"><span>出库口</span></div>
+      <div class="type-background-color" style="background:#c9302c;">
+      </div>
+      <div class="type-font"><span>提升机</span></div>
+      <div class="type-background-color" style="background:#ec971f;">
+      </div>
+      <div class="type-font"><span>充电桩</span></div>
+      <div class="type-background-color" style="background:#800080;">
+      </div>
+      <div class="type-font"><span>缓存位</span></div>
+    </div>
+    <table style="display: inline-block;">
+      <tr v-for='aa in info'>
+        <template v-for='(bb,index) in aa'>
+          <td class="map-td map-td-storage"
+              v-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&& bb.lockMark!='lock'&&bb.status==='empty'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-road"
+              v-else-if="bb.storageType === 'road'&&bb.status==='empty'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-ban" v-else-if="bb.storageType === 'ban'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-in" v-else-if="bb.storageType === 'in'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-out" v-else-if="bb.storageType === 'out'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-hoister" v-else-if="bb.storageType === 'hoister'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-charger" v-else-if="bb.storageType === 'charger'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-cacheBit"
+              v-else-if="bb.storageType === 'storage' && bb.isCacheBit==='y'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-storage"
+              v-else-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&&bb.lockMark==='lock' "
+              @mouseover="hover(bb)" :title="message">lock
+          </td>
+          <td class="map-td map-td-exist-storage"
+              v-else-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&&bb.status==='exist'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-road-exist"
+              v-else-if="bb.storageType === 'road'&&bb.status==='exist'"
+              @mouseover="hover(bb)" :title="message"></td>
+          <td class="map-td map-td-signIn-storage"
+              v-else-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&&bb.status==='signIn'"
+              @mouseover="hover(bb)" :title="message">si
+          </td>
+          <td class="map-td map-td-existOut-storage"
+              v-else-if="bb.storageType === 'storage'&& bb.isCacheBit==='n'&&bb.status==='signOut'"
+              @mouseover="hover(bb)" :title="message">so
+          </td>
+          <td class="map-td map-td-null" v-else @mouseover="hover(bb)" :title="message"></td>
+        </template>
+      </tr>
+    </table>
+  </div>
+  <div class="view-device">
+    <table id="jqGrid"></table>
+    <!--        <div id="jqGridPager"></div>-->
+  </div>
+
+
+  <div id="layer" style="display:none" @click="hideLayer" @contextmenu.prevent></div>
+  <!--    <div style="height: 160px;"></div>-->
+
+</div>
+<script src="libs/jquery.min.js"></script>
+<script src="plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="plugins/layer/layer.js"></script>
+<script src="libs/jquery.easyui.min.js"></script>
+<script src="libs/axios.min.js"></script>
+<script src="libs/vue.min.js"></script>
+<script src="libs/router.js"></script>
+<script src="libs/bootstrap.min.js"></script>
+<script src="libs/axios.min.js"></script>
+<script src="libs/app.js"></script>
+<script src="js/common.js"></script>
+<script src="js/view.js"></script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+@CHARSET "UTF-8";
+/*body{ background:#07090A;} 							!*背景*!*/
+
+.map-td {
+    position:relative;
+    text-align: center; /*设置文字居中*/
+    width: 18.5px; /*设置大小*/
+    min-width: 18.5px;
+    max-width: 18.5px;
+    height: 15.5px;
+    min-height: 15.5px;
+    max-height: 15.5px;
+    border: 1px solid #ffffff; /*设置外边框*/
+    border-radius: 3px; /* 设置边框为圆角 */
+    cursor: pointer; /* 设置鼠标移上去时鼠标的形状 */
+    box-shadow: 0 5px 5px rgba(0, 0, 0, .3); /*设置阴影*/
+    overflow: hidden; /*元素溢出时隐藏*/
+}
+
+.map-td-signIn-storage{
+
+}
+
+.map-td-storage {
+    background-color: #31b0d5;
+}
+
+.map-td-road {
+    background-color: #449d44;
+}
+
+.map-td-ban {
+    /*background-color: #808080*/
+    box-shadow:-0px 0px 10px  rgba(0, 0, 0, .5)inset;
+}
+
+.map-td-hoister {
+    background-color: #c9302c;
+}
+
+.map-td-charger {
+    background-color: #ec971f;
+}
+
+.map-td-inout {
+    background-color: #0000ff;
+}
+
+.map-td-in {
+    background-color: #00ffff;
+}
+
+.map-td-out {
+    background-color: #00ff00;
+}
+
+.map-td-null {
+    box-shadow:-0px 0px 10px  rgba(0, 0, 0, .1)inset;
+    /*background-color: #808080;*/
+}
+.map-td-cacheBit {
+    background-color: #800080;
+}
+
+.map-td-exist-storage {
+    background-color: #0E2D5F;
+}
+
+.map-td-road-exist{
+    background-color: #0E2D5F;
+}
+
+ /*2019/12/19*/
+.storage-monitor-modal {
+    width: 500px;
+    height: 120px;
+    padding: 20px 10px;
+    background-color: #FFFFFF;
+    /* border: none; */
+    color: #000000;
+    /*font-family: 'Montserrat', sans-serif;*/
+    /*font-size: 20px;*/
+    /*text-shadow: 2px 2px 2px #56b78b;*/
+    border-radius: 10px;
+    position: absolute;
+    top: 50%;
+    left:50%;
+    transform: translateX(-50%);
+    display: block;
+    z-index: 5;
+}
+
+p {
+    text-align: center;
+    margin: 0;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed #000000;
+}
+
+.slot {
+    padding-top: 5px;
+}
+
+.storage-monitor-modal button {
+    width: 100px;
+    height: 30px;
+    /*background-color: #000000;*/
+    border: none;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.box {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(51,51,51,0.5);
+    z-index: 3;
+}
+#layer {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+}
+.ui-context-menu{
+    position: fixed !important;
+}
+
+.type-font{
+    width: auto;
+    height:15px;
+    float: left;
+}
+
+.type-background-color{
+    width: 15px;
+    height:15px;
+    float: left;
+    margin: 3px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.active1{
+    position:absolute;
+    float:right;
+    float:left;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    opacity: .1;
+    animation:mymove 2s infinite;
+    -webkit-animation:mymove 2s infinite; /*Safari and Chrome*/
+    animation-direction:alternate;/*轮流反向播放动画。*/
+    animation-timing-function: ease-in-out; /*动画的速度曲线*/
+    /* Safari 和 Chrome */
+    -webkit-animation:mymove 2s infinite;
+    -webkit-animation-direction:alternate;/*轮流反向播放动画。*/
+    -webkit-animation-timing-function: ease-in-out; /*动画的速度曲线*/
+}
+@keyframes mymove
+{
+    0%{
+        transform: scale(1);  /*开始为原始大小*/
+        opacity: .1;
+    }
+    25%{
+        transform: scale(1); /*放大1.1倍*/
+        opacity: .5;
+    }
+    50%{
+        transform: scale(1);
+        opacity: .1;
+    }
+    75%{
+        transform: scale(1);
+        opacity: .5;
+    }
+
+}
+
+/*.active1 {*/
+/*    -webkit-animation: glow 800ms ease-out infinite alternate;*/
+/*    -moz-animation: glow 800ms ease-out infinite alternate;*/
+/*    -o-animation: glow 800ms ease-out infinite alternate;*/
+/*    -ms-animation: glow 800ms ease-out infinite alternate;*/
+/*    !*这里使用了呼吸动画*!*/
+/*    animation: glow 800ms ease-out infinite alternate;*/
+/*    border: 3px solid #ffff00;*/
+/*    box-shadow: 0 0 20px rgba(250, 255, 35, 0.6), inset 0 0 10px rgba(255, 252, 109, 0.4), 0 2px 0 #000;*/
+/*    color: #efe;*/
+/*    outline: none;*/
+/*    z-index:2;*/
+/*}*/
+
+/*以下定义动画帧*/
+@-webkit-keyframes glow {
+    0% {
+        border: 3px solid #999320;
+        box-shadow: 0 0 5px rgba(232, 255, 56, 0.2), inset 0 0 5px rgba(199, 255, 58, 0.1), 0 2px 0 #000;
+    }
+    100% {
+        border: 3px solid #ffff00;
+        box-shadow: 0 0 20px rgba(250, 255, 35, 0.6), inset 0 0 10px rgba(255, 252, 109, 0.4), 0 2px 0 #000;
+    }
+}
+
+@-moz-keyframes glow {
+    0% {
+        border: 3px solid #999320;
+        box-shadow: 0 0 5px rgba(232, 255, 56, 0.2), inset 0 0 5px rgba(199, 255, 58, 0.1), 0 2px 0 #000;
+    }
+    100% {
+        border: 3px solid #ffff00;
+        box-shadow: 0 0 20px rgba(250, 255, 35, 0.6), inset 0 0 10px rgba(255, 252, 109, 0.4), 0 2px 0 #000;
+    }
+}
+
+@-o-keyframes glow {
+    0% {
+        border: 3px solid #999320;
+        box-shadow: 0 0 5px rgba(232, 255, 56, 0.2), inset 0 0 5px rgba(199, 255, 58, 0.1), 0 2px 0 #000;
+    }
+    100% {
+        border: 3px solid #ffff00;
+        box-shadow: 0 0 20px rgba(250, 255, 35, 0.6), inset 0 0 10px rgba(255, 252, 109, 0.4), 0 2px 0 #000;
+    }
+}
+
+@-ms-keyframes glow {
+    0% {
+        border: 3px solid #999320;
+        box-shadow: 0 0 5px rgba(232, 255, 56, 0.2), inset 0 0 5px rgba(199, 255, 58, 0.1), 0 2px 0 #000;
+    }
+    100% {
+        border: 3px solid #ffff00;
+        box-shadow: 0 0 20px rgba(250, 255, 35, 0.6), inset 0 0 10px rgba(255, 252, 109, 0.4), 0 2px 0 #000;
+    }
+}
+
+
+@keyframes glow {
+    0% {
+        border: 3px solid #999320;
+        box-shadow: 0 0 5px rgba(232, 255, 56, 0.2), inset 0 0 5px rgba(199, 255, 58, 0.1), 0 2px 0 #000;
+    }
+    100% {
+        border: 3px solid #ffff00;
+        box-shadow: 0 0 20px rgba(250, 255, 35, 0.6), inset 0 0 10px rgba(255, 252, 109, 0.4), 0 2px 0 #000;
+    }
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>管理员列表</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script type="text/javascript" src="../../libs/axios.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../js/common.js"></script>
+</head>
+<body>
+<div id="honghu_cloud" v-cloak class="user-honghu_cloud">
+    <div v-show="showList">
+        <div class="grid-btn" style="width: 1600px;border: 1px">
+            <div class="form-group col-sm-2">
+                <input type="text" class="form-control" v-model="q.eventId" @keyup.enter="query" placeholder="事件编号" @blur="regexSelect()">
+                <span style="color: #ff0a0d; margin-left: 10px" v-if="!selectFlag" >*事件编号只能是整数</span>
+            </div>
+            <div class="form-group col-sm-2">
+                <input type="text" class="form-control" v-model="q.eventName" @keyup.enter="query" placeholder="事件名称">
+            </div>
+            <a class="btn btn-info" @click="query">查询</a>
+            <a v-if="hasPermission('param:policyEvent')" class="btn btn-danger" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+            <div class=" col-sm-12 form-group">
+                <a v-if="hasPermission('param:policyEvent')" class="btn btn-success" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+                <a id="saveBtn" v-if="hasPermission('param:policyEvent')" class="btn btn-warning" @click="save" disabled="true" style="pointer-events: none" ><i class="fa fa-save"></i>&nbsp;保存</a>
+                <a id="restoreBtn" v-if="hasPermission('param:policyEvent')" class="btn btn-warning" @click="restore" disabled="true"  style="pointer-events: none"><i class="fa fa-"></i>&nbsp;撤销</a>
+            </div>
+        </div>
+
+        <table id="jqGrid"></table>
+        <div id="jqGridPager"></div>
+    </div>
+
+</div>
+<script src="../../js/modules/param/policyEvent.js"></script>
+</body>
+</html>

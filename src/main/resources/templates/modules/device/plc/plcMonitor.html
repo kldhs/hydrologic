@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html style="overflow-x: hidden;">
+<head>
+  <meta charset="utf-8">
+  <script type="text/javascript" src="../../../libs/vue.min.js"></script>
+  <script type="text/javascript" src="../../../libs/axios.min.js"></script>
+  <link rel="stylesheet" href="../../../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../../css/font-awesome.min.css">
+  <link rel="stylesheet" href="../../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+  <link rel="stylesheet" href="../../../plugins/ztree/css/metroStyle/metroStyle.css">
+  <link rel="stylesheet" href="../../../css/main.css">
+  <link rel="stylesheet" href="../../../css/plcMonitor.css">
+  <link rel="stylesheet" href="../../../css/jquery.contextMenu.css">
+  <script type="text/javascript" src="../../../libs/axios.min.js"></script>
+  <script src="../../../libs/jquery.min.js"></script>
+  <script src="../../../plugins/layer/layer.js"></script>
+  <script src="../../../libs/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../../../libs/axios.min.js"></script>
+  <script src="../../../libs/vue.min.js"></script>
+  <script src="../../../plugins/jqgrid/grid.locale-cn.js"></script>
+  <script src="../../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+  <script src="../../../plugins/ztree/jquery.ztree.all.min.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script type="text/javascript" src="../../../libs/jquery.contextMenu.min.js"></script>
+</head>
+<body>
+<div id="app">
+  <div class="view-button" style="text-align:right">
+    <div style="text-align:right;width: 1200px;float: left;height: 40px;padding: 0px;margin-right: 20px;">
+      <div class="form-group" style="float: left">
+        <div class="" style="float: left;margin-top: 7px;font-size: 15px">设备类型：</div>
+        <select v-model="q.deviceType" class="form-control" style="float:right;margin-right: 50px;width: 95px;">
+          <option  :value="1" >全部</option>
+          <option :value="2" :key="2">输送线</option>
+          <option :value="3" :key="3">提升机</option>
+        </select>
+      </div>
+      <a class="btn btn-info" @click="query" style="float: left;margin-right: 10px;">查询</a>
+    </div>
+  </div>
+  <div class="view-c">
+    <table id="jqGridc"></table>
+  </div>
+  <div class="view-h">
+    <table id="jqGridh"></table>
+  </div>
+
+</div>
+<script src="../../../js/modules/device/plc/plcMonitor.js"></script>
+</body>
+</html>

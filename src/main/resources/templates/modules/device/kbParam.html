@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>看板参数配置</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <link rel="stylesheet" href="../../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../css/font-awesome.min.css">
+  <!--<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">-->
+  <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/monitor.css">
+  <link rel="stylesheet" href="../../plugins/jqgrid/jqGridAutoList.css">
+  <script src="../../libs/jquery.min.js"></script>
+  <script src="../../plugins/layer/layer.js"></script>
+  <script type="text/javascript" src="../../libs/axios.min.js"></script>
+  <script src="../../libs/bootstrap.min.js"></script>
+  <script src="../../libs/vue.min.js"></script>
+  <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+  <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+  <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+  <script src="../../js/common.js"></script>
+  <script src="../../libs/bootstrap-select.min.js"></script>
+
+</head>
+<body>
+<div id="honghu_cloud" v-cloak class="user-honghu_cloud">
+  <div v-show="showList">
+    <div class="grid-btn">
+      <div class="form-group">
+        <div  class=" col-sm-2" >
+          <input type="text" class="form-control" v-model="q.kbId" @keyup.enter="query" placeholder="看板编号" >
+        </div>
+        <div class="form-group col-sm-2 ">
+          <label class="sr-only">看板类型</label>
+          <select v-model="q.kbType" class="form-control">
+            <option :value="null" selected="selected">看板类型</option>
+            <option v-for="item in kbTypeList" :value="item.value" :key="item.value">{{item.label}}</option>
+          </select>
+        </div>
+
+        <a  v-if="hasPermission('device:kbParam:query')" class="btn btn-info" @click="query">查询</a>
+        <a  v-if="hasPermission('device:kbParam:add')" class="btn btn-success" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+        <a  v-if="hasPermission('device:kbParam:edit')" class="btn btn-warning" @click="update"><i
+                class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+        <a v-if="hasPermission('device:kbParam:delete')" class="btn btn-danger" @click="del"><i
+                class="fa fa-trash-o"></i>&nbsp;删除</a>
+        <a  class="btn btn-info" @click="toDistrict">&nbsp;看板职责</a>
+      </div>
+
+    </div>
+    <div style="overflow-x:auto">
+      <table id="jqGrid"></table>
+    </div>
+    <div id="jqGridPager"></div>
+  </div>
+
+  <div v-show="!showList" class="panel panel-default">
+    <div class="panel-heading">{{title}}</div>
+    <form class="form-horizontal" style="width: 935px;">
+
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>仓库编号</div>
+        <div class="col-sm-4" v-show="showAndorUpdate">
+          <select v-model="q.warehouseId" class="form-control" @blur="checkWarehouseId">
+            <option v-for="item in warehouseList" :value="item.warehouseId" :key="item.warehouseId">{{item.warehouseId}}
+            </option>
+            <span style="color: #ff0a0d; margin-left: 10px" v-if="!isWarehouseIdValidated">*仓库编号不能为空</span>
+          </select>
+<!--          <span style="color: #ff0a0d; margin-left: 10px" v-if="!warehouseIdFlag">*仓库必须选择</span>-->
+        </div>
+        <div class="col-sm-4" v-show="!showAndorUpdate">
+          <select v-model="kbParam.warehouseId" class="form-control" @blur="checkWarehouseId">
+            <option v-for="item in warehouseList" :value="item.warehouseId" :key="item.warehouseId">{{item.warehouseId}}
+            </option>
+            <span style="color: #ff0a0d; margin-left: 10px" v-if="!isWarehouseIdValidated">*仓库编号不能为空</span>
+          </select>
+          <!--          <span style="color: #ff0a0d; margin-left: 10px" v-if="!warehouseIdFlag">*仓库必须选择</span>-->
+        </div>
+
+        <div class="col-sm-2 control-label"><span class="star">*</span>看板编号</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="kbParam.kbId" placeholder="不能为空"  @blur="checkKbId"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isKbIdValidated">*看板编号不能为空且只能是整数且同仓库唯一</span>
+        </div>
+
+
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>看板名称</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="kbParam.kbName"  placeholder="不能为空"  @blur="checkKbName"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isKbNameValidated">*看板名称不能为空</span>
+        </div>
+        <div class="col-sm-2 control-label">看板位置</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="kbParam.kbLocation"  />
+
+        </div>
+
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>看板类型</div>
+        <div class="col-sm-4" v-show="showAndorUpdate">
+          <select v-model="q.kbTypeTemp" class="form-control" @blur="checkKbType">
+            <option v-for="item in kbTypeList" :value="item.value" :key="item.value">{{item.label}}</option>
+          </select>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isKbTypeValidated">*看板类型不能为空</span>
+        </div>
+        <div class="col-sm-4" v-show="!showAndorUpdate">
+          <select v-model="kbParam.kbType" class="form-control" >
+            <option v-for="item in kbTypeList" :value="item.value" :key="item.value">{{item.label}}</option>
+          </select>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isKbTypeValidated">*看板类型不能为空</span>
+        </div>
+
+        <div class="col-sm-2 control-label"><span class="star">*</span>看板型号</div>
+        <div class="col-sm-4" v-show="showAndorUpdate">
+<!--          <input type="text" class="form-control" v-model="kbParam.kbModel"  placeholder="不能为空" @blur="checkKbModel"/>-->
+          <select v-model="q.kbModel" class="form-control" @blur="checkKbModel">
+            <option v-for="item in kbModelList" :value="item.value" :key="item.value">{{item.label}}</option>
+          </select>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isKbModelValidated">*看板型号不能为空</span>
+        </div>
+        <div class="col-sm-4" v-show="!showAndorUpdate">
+          <select v-model="kbParam.kbModel" class="form-control" @blur="checkKbModel">
+            <option v-for="item in kbModelList" :value="item.value" :key="item.value">{{item.label}}</option>
+          </select>
+<!--          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isKbModelValidated">*看板型号不能为空</span>-->
+        </div>
+
+
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-2 control-label">DLL路径</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="kbParam.dllRoute" @blur="checkDllRoute" placeholder="例:E:\a\b"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isDllRouteValidated">*请输入正确文件路径</span>
+        </div>
+        <div class="col-sm-2 control-label"><span class="star">*</span>看板IP</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="kbParam.kbIp"  placeholder="不能为空" @blur="checkKbIp"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isKbIpValidated">*请输入正确的IP地址</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-2 control-label"><span class="star">*</span>看板端口</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="kbParam.kbPort"  placeholder="不能为空" @blur="checkKbPort"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isKbPortValidated">*请输入正确的端口地址</span>
+        </div>
+        <div class="col-sm-2 control-label"><span class="star">*</span>显示方式</div>
+        <div class="col-sm-4" v-show="showAndorUpdate">
+          <select v-model="q.displayMode" class="form-control">
+            <option v-for="item in displayModeList" :value="item.value" :key="item.value">{{item.label}}</option>
+          </select>
+        </div>
+
+        <div class="col-sm-4" v-show="!showAndorUpdate">
+          <select v-model="kbParam.displayMode" class="form-control">
+            <option v-for="item in displayModeList" :value="item.value" :key="item.value">{{item.label}}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label">图片路径</div>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" v-model="kbParam.picRoute"   placeholder="默认本项目路径。例:E:\a\b" @blur="checkPicRoute"/>
+          <span style="color: #ff0a0d; margin-left: 10px" v-if="!isPicRouteValidated">*请输入正确文件路径</span>
+        </div>
+
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label">显示内容</div>
+        <div class="col-sm-4">
+          <textarea rows="4" cols="37" v-model="kbParam.showContent">
+
+          </textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-2 control-label"></div>
+        <input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+        &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+<script src="../../js/modules/device/kbParam.js"></script>
+</body>
+</html>

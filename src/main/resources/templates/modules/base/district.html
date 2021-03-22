@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>库区管理</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<link rel="stylesheet" href="../../css/bootstrap.min.css">
+<link rel="stylesheet" href="../../css/font-awesome.min.css">
+<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+<link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+<link rel="stylesheet" href="../../css/monitor.css">
+<link rel="stylesheet" href="../../css/main.css">
+<script type="text/javascript" src="../../libs/axios.min.js"></script>
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+</head>
+<body>
+<div id="honghu_cloud" v-cloak  class="user-honghu_cloud">
+	<div v-show="showList" class="panel panel-default">
+		<div class="panel-heading">{{title}}</div>
+		<div class="form-horizontal grid-btn" style="width: 1200px;border: 0px">
+			<div class="col-sm-12 form-group ">
+			<div class="col-sm-1 control-label" >仓库编号:</div>
+			<div class="col-sm-2">
+				<input id="warehouseId" type="text" class="form-control" v-model="q.warehouseId" disabled  >
+			</div>
+
+			<div class="col-sm-1 control-label" >仓库名称:</div>
+			<div class="col-sm-2">
+				<input type="text" class="form-control" v-model="warehouse.warehouseName" disabled  >
+			</div>
+			<a v-if="hasPermission('base:warehouse')" class="btn btn-warning" @click="toWarehouse">返回</a>
+		</div>
+			<div class="col-sm-12 form-group ">
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<a v-if="hasPermission('base:warehouse')" class="btn btn-success" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+				<a v-if="hasPermission('base:warehouse')" class="btn btn-danger" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+				<a v-if="hasPermission('base:warehouse')" class="btn btn-warning" @click="update"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+				<a v-if="hasPermission('base:warehouse')" class="btn btn-warning" @click="forbidden"><i class="fa fa-pencil-square-o"></i>&nbsp;禁用</a>
+				<a v-if="hasPermission('base:warehouse')" class="btn btn-warning" @click="startUsing"><i class="fa fa-pencil-square-o"></i>&nbsp;启用</a>
+				<a id="saveBtn" v-if="hasPermission('base:warehouse')" class="btn btn-warning" @click="doUpdate" disabled="true" style="pointer-events: none" ><i class="fa fa-pencil-square-o"></i>&nbsp;保存编辑</a>
+				<a id="restoreBtn" v-if="hasPermission('base:warehouse')" class="btn btn-warning" @click="restore" disabled="true"  style="pointer-events: none"><i class="fa fa-pencil-square-o"></i>&nbsp;撤销编辑</a>
+			</div>
+
+			<!--<div class="col-sm-6 form-group ">
+				<a v-if="hasPermission('base:warehouse')" class="btn btn-success" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+				<a v-if="hasPermission('base:warehouse')" class="btn btn-warning" @click="update"><i class="fa fa-pencil-square-o"></i>&nbsp;修改</a>
+				<a v-if="hasPermission('base:warehouse')" class="btn btn-danger" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+			</div>-->
+		</div>
+	    <table id="jqGrid"></table>
+	    <div id="jqGridPager"></div>
+
+    </div>
+    
+    <div v-show="!showList" class="panel panel-default" style="height: 80%">
+		<div class="panel-heading">{{title}}</div>
+		<form class="form-horizontal">
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label"><span class="star">*</span>库区名称</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="district.districtName" contenteditable="false"/>
+			    </div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label"><span class="star">*</span>所在仓库</div>
+				<div class="col-sm-10">
+					<!--<select v-model="district.warehouseId" style="height: 34px;width: 120px">
+						<option v-for="item in warehouseList" :value="item.value" :key="item.value">{{item.label}}</option>
+					</select>-->
+					<input type="text" class="form-control" v-model="warehouse.warehouseName" readonly contenteditable="false"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label">备注</div>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" v-model="district.remark"/>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-sm-2 control-label"><span class="star">*</span>划分区域</div>
+				<div  class="col-sm-2 control-label">
+					<div class="form-group">
+						<select v-model="q.floor" class="form-control" style="float: right;" @change="getWarehouseMap">
+							<option v-for="item in floorList" :value="item" :key="item" >{{item}}层</option>
+						</select>
+					</div>
+				</div>
+				<div class="col-sm-8 control-label">
+					<div class="input-group" style="width: 150px;float: left">
+						<span class="input-group-btn">
+							<button class="btn btn-default" type="button" @click="toStartNode">
+								起点
+							</button>
+						</span>
+						<input type="text" class="form-control" v-model="district.startNode" @click="toStartNode">
+					</div>
+					<div class="col-sm-2 control-label" style="width: 100px"></div>
+					<div class="input-group" style="width: 150px;float: left">
+						<span class="input-group-btn">
+							<button class="btn btn-default" type="button" @click="toEndNode">
+								终点
+							</button>
+						</span>
+						<input type="text" class="form-control" v-model="district.endNode" @click="toEndNode">
+					</div>
+				</div>
+
+				<div class="control-label" style="width:20% "></div>
+				<code style="margin-top:4px;display: block;float: left; margin-left: 100px">请点击下图选取库区起点和终点</code>
+			</div>
+			<div class="form-group" style="height: 450px">
+				<div class="col-sm-2 control-label"></div>
+				<div style="float:left; white-space: nowrap;position:absolute; height:440px; overflow:auto" class="col-sm-10 control-label">
+					<table style="display: inline-block;">
+						<tr v-for='items in storageInfo'>
+							<template v-for='item in items'>
+								<td class="map-td map-td-storage" v-if="item.storageType === 'storage'"  @click="getlocation(item)" @mouseenter="enter(item, event)" :title="message">{{"("+item.x+","+item.y+")"}}</td>
+								<td class="map-td map-td-road" v-else-if="item.storageType === 'road'" @click="getlocation(item)" @mouseenter="enter(item)"  :title="message">{{"("+item.x+","+item.y+")"}}</td>
+								<td class="map-td map-td-ban" v-else-if="item.storageType === 'ban'" @click="getlocation(item)" @mouseenter="enter(item)"  :title="message"></td>
+								<td class="map-td map-td-in" v-else-if="item.storageType === 'in'" @click="getlocation(item)" @mouseenter="enter(item)"  :title="message">{{"("+item.x+","+item.y+")"}}</td>
+								<td class="map-td map-td-out" v-else-if="item.storageType === 'out'" @click="getlocation(item)" @mouseenter="enter(item)"  :title="message">{{"("+item.x+","+item.y+")"}}</td>
+								<td class="map-td map-td-hoister" v-else-if="item.storageType === 'hoister'" @click="getlocation(item)" @mouseenter="enter(item)"  :title="message">{{"("+item.x+","+item.y+")"}}</td>
+								<td class="map-td map-td-charger" v-else-if="item.storageType === 'charger'" @click="getlocation(item)" @mouseenter="enter(item)"  :title="message">{{"("+item.x+","+item.y+")"}}</td>
+								<!--<td class="map-td map-td-inout" v-else-if="item.nodeType === 'IN_OUT'" @click="getlocation(item)" @mouseenter="enter(item)" @mouseleave="leave">{{"("+item.x+","+item.y+")"}}</td>-->
+								<td class="map-td map-td-null" v-else>{{"("+item.x+","+item.y+")"}}</td>
+							</template>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="form-group" >
+				<div class="col-sm-2 control-label"></div>
+				<input type="button" class="btn btn-success" @click="saveOrUpdate" value="确定"/>
+				&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+			</div>
+		</form>
+	</div>
+    <!--<div v-if='showBox'>-->
+        <!--<div class='show-parent' :style="{left: tranLeft, top: tranTop}">-->
+            <!--<div class="shard">-->
+                <!--<div class="show-inner">-->
+                    <!--<div >坐标：{{'('+boxItem.x+','+boxItem.y+','+boxItem.z+')'}})</div>-->
+                    <!--<div >货位状态：{{boxItem.status}}</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+</div>
+
+<script src="../../js/modules/base/district.js"></script>
+</body>
+</html>

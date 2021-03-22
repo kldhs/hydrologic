@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hl.dao.mapper.TdDeviceInfoMapper">
+    <resultMap id="BaseResultMap" type="com.hl.dao.entity.TdDeviceInfo">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="dev_sn" property="devSn" jdbcType="VARCHAR"/>
+        <result column="dev_name" property="devName" jdbcType="VARCHAR"/>
+        <result column="ip" property="ip" jdbcType="VARCHAR"/>
+        <result column="dev_codeformat" property="devCodeformat" jdbcType="VARCHAR"/>
+        <result column="dev_codeschema" property="devCodeschema" jdbcType="VARCHAR"/>
+        <result column="dev_location" property="devLocation" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        id, dev_sn, dev_name,ip, dev_codeformat, dev_codeschema, dev_location, create_time
+    </sql>
+</mapper>

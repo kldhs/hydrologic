@@ -13,8 +13,6 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 public class HyStart {
 
     public static void main(String[] args) {
-        //String binaryByHex = CRC16Util.getBinaryByHex("000004A1");
-        //System.out.println(binaryByHex);
         SpringApplication.run(HyStart.class, args);
         final int PORT = Integer.parseInt(System.getProperty("port", "7000"));
         SystemInit.init();

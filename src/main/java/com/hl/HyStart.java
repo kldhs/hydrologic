@@ -1,7 +1,6 @@
 package com.hl;
 
 import com.hl.netty.server.NettyServer;
-import com.hl.util.CRC16Util;
 import com.hl.util.SystemInit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -5,6 +5,7 @@ import com.hl.enums.IdentifierChartCEnum;
 import com.hl.enums.StartAndEndCharEnum;
 import com.hl.pojo.up.CompleteMessageUp;
 import com.hl.pojo.up.HexBcdM1234Up;
+import com.hl.util.CRC16Util;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class HandleUtil {
     public static String getM2CurrentPackageNumber(HashMap<String, HexBcdM1234Up> allHexBcdM1234Up) {
         String m2CurrentPackageNumber = "0";
         Set<String> keys = allHexBcdM1234Up.keySet();
-        m2CurrentPackageNumber = String.valueOf(keys.size()+1);
+        m2CurrentPackageNumber = String.valueOf(keys.size() + 1);
         return m2CurrentPackageNumber;
     }
 
@@ -67,7 +68,7 @@ public class HandleUtil {
      */
     public static boolean checkAcceptMessageOver(CompleteMessageUp completeMessage, TdDeviceInfo tdDeviceInfo) {
         HashMap<String, HexBcdM1234Up> allHexBcdM1234Up = completeMessage.getAllHexBcdM1234Up();
-        if(!"M2".equals(tdDeviceInfo.getDevCodeschema())) {
+        if (!"M2".equals(tdDeviceInfo.getDevCodeschema())) {
             if (allHexBcdM1234Up == null) {
                 return false;
             } else {
@@ -78,9 +79,9 @@ public class HandleUtil {
                 }
             }
             return true;
-        }else{
+        } else {
             HexBcdM1234Up hexBcdM1234Up = allHexBcdM1234Up.get(String.valueOf(allHexBcdM1234Up.keySet().size()));
-            if(hexBcdM1234Up.getEom().equals(StartAndEndCharEnum.ETX.getHexStr())){
+            if (hexBcdM1234Up.getEom().equals(StartAndEndCharEnum.ETX.getHexStr())) {
                 return true;
             }
             return false;
@@ -128,23 +129,32 @@ public class HandleUtil {
      * 处理要素信息组信息
      */
     public static HashMap handleElementInfoGroupStr(HashMap elementInfoGroup, String elementInfoGroupStr) {
-        if (elementInfoGroupStr.substring(0, 2).equals("09")) {
-            int numLength =Integer.valueOf(elementInfoGroupStr.substring(4, 6));
-            String a ="";
-            for (int i = 1; i <=numLength; i++) {
-                String b = elementInfoGroupStr.substring(6, 6+numLength*4).substring((i-1)*4,i*4);
-                a =a+Integer.valueOf(b.substring(0,2))+"."+Integer.valueOf(b.substring(2,4))+"|";
+        //如果是闸门状态，单独加的，可能不符合协议
+        if (elementInfoGroupStr.substring(0, 2).equals(IdentifierChartCEnum._09.getHexStr())) {
+            int numLength = Integer.valueOf(elementInfoGroupStr.substring(4, 6));
+            String a = "";
+            for (int i = 1; i <= numLength; i++) {
+                String b = elementInfoGroupStr.substring(6, 6 + numLength * 4).substring((i - 1) * 4, i * 4);
+                a = a + Integer.valueOf(b.substring(0, 2)) + "." + Integer.valueOf(b.substring(2, 4)) + "|";
 
             }
-            a=a.substring(0,a.length()-1);
-            elementInfoGroup.put(IdentifierChartCEnum.getEnumByObj(elementInfoGroupStr.substring(0, 2)),a);
-            elementInfoGroupStr = elementInfoGroupStr.substring(6+numLength*4);
+            a = a.substring(0, a.length() - 1);
+            elementInfoGroup.put(IdentifierChartCEnum.getEnumByObj(elementInfoGroupStr.substring(0, 2)), a);
+            elementInfoGroupStr = elementInfoGroupStr.substring(6 + numLength * 4);
         } else {
-            String numLength = elementInfoGroupStr.substring(2, 4);
-            int[] ints = getDataAndDecimalsLength(numLength);
-            elementInfoGroup.put(IdentifierChartCEnum.getEnumByObj(elementInfoGroupStr.substring(0, 2)),
-                    elementInfoGroupStr.substring(4, 4 + ints[0] * 2 - ints[1]) + "." + elementInfoGroupStr.substring(4 + ints[0] * 2 - ints[1], 4 + ints[0] * 2));
-            elementInfoGroupStr = elementInfoGroupStr.substring(4 + ints[0] * 2);
+            if (elementInfoGroupStr.substring(0, 2).equals(IdentifierChartCEnum.FF01.getHexStr().substring(0, 2))) {
+                String numLength = elementInfoGroupStr.substring(4, 6);
+                int[] ints = getDataAndDecimalsLength(numLength);
+                elementInfoGroup.put(IdentifierChartCEnum.getEnumByObj(elementInfoGroupStr.substring(0, 4)),
+                        elementInfoGroupStr.substring(6, 6 + ints[0] * 2 - ints[1]) + "." + elementInfoGroupStr.substring(6 + ints[0] * 2 - ints[1], 6 + ints[0] * 2));
+                elementInfoGroupStr = elementInfoGroupStr.substring(6 + ints[0] * 2);
+            }else {
+                String numLength = elementInfoGroupStr.substring(2, 4);
+                int[] ints = getDataAndDecimalsLength(numLength);
+                elementInfoGroup.put(IdentifierChartCEnum.getEnumByObj(elementInfoGroupStr.substring(0, 2)),
+                        elementInfoGroupStr.substring(4, 4 + ints[0] * 2 - ints[1]) + "." + elementInfoGroupStr.substring(4 + ints[0] * 2 - ints[1], 4 + ints[0] * 2));
+                elementInfoGroupStr = elementInfoGroupStr.substring(4 + ints[0] * 2);
+            }
         }
         if (elementInfoGroupStr.length() != 0) {
             handleElementInfoGroupStr(elementInfoGroup, elementInfoGroupStr);
@@ -157,16 +167,7 @@ public class HandleUtil {
      */
     public static int[] getDataAndDecimalsLength(String numLength) {
         int[] ints = new int[2];
-        int numLengthNum = Long.valueOf(numLength, 16).intValue();
-        StringBuffer sb = new StringBuffer();
-        sb.append((numLengthNum >> 7) & 0x1)
-                .append((numLengthNum >> 6) & 0x1)
-                .append((numLengthNum >> 5) & 0x1)
-                .append((numLengthNum >> 4) & 0x1)
-                .append((numLengthNum >> 3) & 0x1)
-                .append((numLengthNum >> 2) & 0x1)
-                .append((numLengthNum >> 1) & 0x1)
-                .append((numLengthNum >> 0) & 0x1);
+        String sb = CRC16Util.getBinaryByHex(numLength);
         ints[0] = Long.valueOf(sb.substring(0, 5), 2).intValue();
         ints[1] = Long.valueOf(sb.substring(5, 8), 2).intValue();
         return ints;

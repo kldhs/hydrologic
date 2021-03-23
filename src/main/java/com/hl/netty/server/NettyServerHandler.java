@@ -79,11 +79,11 @@ public class NettyServerHandler extends ChannelHandlerAdapter {
                     String messageHex = CRC16Util.bytesToHex(bytes).toUpperCase();
                     LogUtil.nettyInfo("----netty服务端----" + "接收到来自 " + (ctx.channel().remoteAddress()).toString().replace("/", "") + "的byte数组转换为Hex字符串为：" + messageHex);
                     String a = HandleFullMessage.handlefullmessage(messageHex, (ctx.channel().remoteAddress()).toString().replace("/", ""));
-                    LogUtil.nettyInfo("----netty服务端----" + "向 " + (ctx.channel().remoteAddress()).toString().replace("/", "") + "地址发送的Hex字符串为：" + a);
+                    LogUtil.nettyInfo("----netty服务端----" + "回复报文,向 " + (ctx.channel().remoteAddress()).toString().replace("/", "") + "地址发送的Hex字符串为：" + a);
                     ByteBuf byteBuf = Unpooled.copiedBuffer(CRC16Util.HexString2Bytes(a));
                     ctx.writeAndFlush(byteBuf);
                 } catch (Exception e) {
-
+                    LogUtil.nettyPrintStackTrace("异常",e);
                     e.printStackTrace();
                 }
                 return null;

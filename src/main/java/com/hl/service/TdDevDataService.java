@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.hl.util.CRC16Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -66,7 +67,10 @@ public class TdDevDataService {
                 if (key.equals(IdentifierChartCEnum._09)) {
                     strChannel = strChannel + key.getHexStr() + ",";
                     strValue = strValue + completeMessage.getAllElementInfoGroup().get(key) + ",";
-                } else {
+                } else if(key.equals(IdentifierChartCEnum._45)){
+                    strChannel = strChannel + key.getHexStr() + ",";
+                    strValue = strValue + CRC16Util.getBinaryByHex(completeMessage.getAllElementInfoGroup().get(key).replace(".","")) + ",";
+                }else{
                     strChannel = strChannel + key.getHexStr() + ",";
                     strValue = strValue + nf.format(Double.valueOf(completeMessage.getAllElementInfoGroup().get(key))) + ",";
                 }

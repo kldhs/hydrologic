@@ -45,6 +45,7 @@ public final class NettyServer {
             channelFuture.channel().closeFuture().sync();
         } catch (Exception e) {
             e.printStackTrace();
+            LogUtil.nettyPrintStackTrace("异常",e);
         } finally {
             // Shut down all event loops to terminate all threads.
             bossGroup.shutdownGracefully();

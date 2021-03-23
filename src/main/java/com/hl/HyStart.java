@@ -11,6 +11,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class HyStart {
     public static void main(String[] args) {
+        System.out.println("1111111111111");
         SpringApplication.run(HyStart.class, args);
         final int PORT = Integer.parseInt(System.getProperty("port", "7000"));
         SystemInit.init();

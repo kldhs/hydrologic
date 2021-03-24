@@ -347,7 +347,7 @@ public class HandleFullMessage {
         hexBcdM1234Down.setFunctionCodeEnum(hexBcdM1234Up.getFunctionCodeEnum());
         hexBcdM1234Down.setUpOrDown("8");
         hexBcdM1234Down.setMessageTextStr(hexBcdM1234MessageTextDown.toString());
-        hexBcdM1234Down.setMessageTextLength(CRC16Util.addZeroForNum(CRC16Util.toHexString(hexBcdM1234Down.getMessageTextStr().length())
+        hexBcdM1234Down.setMessageTextLength(CRC16Util.addZeroForNum(CRC16Util.toHexString(hexBcdM1234Down.getMessageTextStr().length()/2)
                 , 12 / 4));
         hexBcdM1234Down.setSom(StartAndEndCharEnum.STX.getHexStr());
         hexBcdM1234Down.setHexBcdM1234MessageTextDown(hexBcdM1234MessageTextDown);

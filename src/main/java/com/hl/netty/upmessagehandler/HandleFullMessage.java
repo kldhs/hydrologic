@@ -35,11 +35,12 @@ public class HandleFullMessage {
      */
     public static String handlefullmessage(String resultStr, String ipAndPort) {
         //遥测站地址
-        String devSn = resultStr.substring(
-                (HexBcdM1234UpEnum.messageText.getTotalLength() - HexBcdM1234UpEnum.eom.getTotalLength() - HexBcdM1234UpEnum.checkCode.getTotalLength()) * 2,
-                (HexBcdM1234UpEnum.messageText.getTotalLength() - HexBcdM1234UpEnum.eom.getTotalLength() - HexBcdM1234UpEnum.checkCode.getTotalLength()) * 2
-                        + Long.valueOf(resultStr.substring(HexBcdM1234UpEnum.messageTextLength.getStartLength(), HexBcdM1234UpEnum.messageTextLength.getEndLength()), 16).intValue() * 2)
-                .substring(20, 30);
+        //String devSn = resultStr.substring(
+        //        (HexBcdM1234UpEnum.messageText.getTotalLength() - HexBcdM1234UpEnum.eom.getTotalLength() - HexBcdM1234UpEnum.checkCode.getTotalLength()) * 2,
+        //        (HexBcdM1234UpEnum.messageText.getTotalLength() - HexBcdM1234UpEnum.eom.getTotalLength() - HexBcdM1234UpEnum.checkCode.getTotalLength()) * 2
+        //                + Long.valueOf(resultStr.substring(HexBcdM1234UpEnum.messageTextLength.getStartLength(), HexBcdM1234UpEnum.messageTextLength.getEndLength()), 16).intValue() * 2)
+        //        .substring(20, 30);
+        String devSn = resultStr.substring(HexBcdM1234UpEnum.telemetryStationAddr.getStartLength(),HexBcdM1234UpEnum.telemetryStationAddr.getEndLength());
         //获取当前设备对象
         TdDeviceInfo tdDeviceInfo = SystemInit.tdDeviceInfoIpMap.get(ipAndPort.split(":")[0].replace(" ", ""));
         if (tdDeviceInfo == null) {
@@ -82,10 +83,14 @@ public class HandleFullMessage {
             }
             //处理单次接收的报文
             handleHexBcdM1234Up(hexBcdM1234Up, resultStr, ipAndPort);
-            //处理正文
-            hexBcdM1234UpMessageText = handlemessageText(hexBcdM1234Up, ipAndPort);
-            //处理上行完整报文
-            return handleCompleteMessageUp(hexBcdM1234UpMessageText, hexBcdM1234Up, SystemInit.tdDeviceInfoSnMap.get(hexBcdM1234Up.getTelemetryStationAddr()), ipAndPort, codeSchema);
+            if(hexBcdM1234Up.getFunctionCodeEnum().equals(FunctionCodeEnum._2F)){
+                return null;
+            }else {
+                //处理正文
+                hexBcdM1234UpMessageText = handlemessageText(hexBcdM1234Up, ipAndPort);
+                //处理上行完整报文
+                return handleCompleteMessageUp(hexBcdM1234UpMessageText, hexBcdM1234Up, SystemInit.tdDeviceInfoSnMap.get(hexBcdM1234Up.getTelemetryStationAddr()), ipAndPort, codeSchema);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             LogUtil.nettyInfo("----netty服务端----" + e.getMessage());

@@ -257,23 +257,6 @@ public class CRC16Util {
         return HexString2Bytes(CRC16Util.getCRCMsg(cmdStr));
     }
 
-    public static void main(String[] args) {
-        // TODO Auto-generated method stub
-        //		byte[] sbuf = CRC16Util.getSendBuf("007D8002003EFF00000002000100000002000200060033000000050001024000000005000100340000000500010002000000050001002100000002000100F0000000020002");
-        //		System.out.println(CRC16Util.getBufHexStr(sbuf));
-        //		String str = "007D8002003EFF00000002000100000002000200060033000000050001024000000005000100340000000500010002000000050001002100000002000100F0000000020002";
-//		String str = "0080B000000000";
-//		System.out.println(getCRCMsg(str));
-//		byte[] d = HexString2Bytes(getCRCMsg(str));
-//		System.out.println(Bytes2HexString(d));
-
-        byte[] bytes = new byte[1];
-        Byte aByte = new Byte((byte) 48);
-        bytes[0] = aByte;
-        String ss = new String(bytes);
-
-
-    }
 
     /**
      * unicode转字符串
@@ -384,6 +367,11 @@ public class CRC16Util {
 			sb.append((numLengthNum >> i) & 0x1);
         }
         return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        String aa= CRC16Util.getCRCCode("7E7E011802832372000032002B020568201125180042F1F1180283237248F0F02011251800201900030026190188303923000035103812128103");
+        System.out.println(aa);
     }
 }
 

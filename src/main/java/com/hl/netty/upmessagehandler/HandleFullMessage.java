@@ -266,6 +266,7 @@ public class HandleFullMessage {
             hexBcdM1234UpMessageText.setCurrentPackageNumber(currentPackagesNum);
             hexBcdM1234UpMessageText.setElementInfoGroupStr(elementInfoGroupStr);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new HexBcdM1234MessageTextUpException(ipAndPort + " 客户端处理正文异常");
         }
         return hexBcdM1234UpMessageText;

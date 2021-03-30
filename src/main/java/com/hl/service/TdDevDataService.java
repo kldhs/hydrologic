@@ -69,7 +69,7 @@ public class TdDevDataService {
                     strValue = strValue + completeMessage.getAllElementInfoGroup().get(key) + ",";
                 } else if(key.equals(IdentifierChartCEnum._45)){
                     strChannel = strChannel + key.getHexStr() + ",";
-                    strValue = strValue + CRC16Util.getBinaryByHex(completeMessage.getAllElementInfoGroup().get(key).replace(".","")) + ",";
+                    strValue = strValue + CRC16Util.getBinaryByHex(completeMessage.getAllElementInfoGroup().get(key).replace(".","")).substring(0,12) + ",";
                 }else{
                     strChannel = strChannel + key.getHexStr() + ",";
                     strValue = strValue + nf.format(Double.valueOf(completeMessage.getAllElementInfoGroup().get(key))) + ",";

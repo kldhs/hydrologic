@@ -1,7 +1,5 @@
 package com.hl.pojo.down;
 
-import com.hl.enums.TeleStationClassCodeEnum;
-
 /**
  * @author xs
  * @date 2021/01/12 10:16 下行报文正文

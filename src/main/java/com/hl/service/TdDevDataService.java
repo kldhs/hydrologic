@@ -5,14 +5,13 @@ import com.hl.dao.mapper.TdDevDataMapper;
 import com.hl.enums.IdentifierChartCEnum;
 import com.hl.exception.DbOperationException;
 import com.hl.pojo.up.CompleteMessageUp;
+import com.hl.util.CRC16Util;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import com.hl.util.CRC16Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * @author xs
@@ -46,7 +45,7 @@ public class TdDevDataService {
         tdDevDataMapper.insert(tdDevData);
     }
 
-    public void insertTdDevDataByMyself(CompleteMessageUp completeMessage) throws DbOperationException {
+    public void insertTdDevDataByMyself(CompleteMessageUp completeMessage,String picturePath) throws DbOperationException {
         try {
             java.text.NumberFormat nf = java.text.NumberFormat.getInstance();
             nf.setGroupingUsed(false);
@@ -64,7 +63,10 @@ public class TdDevDataService {
             String strValue = new String();
             String dateNowStr = new SimpleDateFormat("yyyyMM").format(new Date());
             for (IdentifierChartCEnum key : completeMessage.getAllElementInfoGroup().keySet()) {
-                if (key.equals(IdentifierChartCEnum._09)) {
+                if(key.equals(IdentifierChartCEnum.F3.getHexStr())){
+                    strChannel = strChannel + key.getHexStr() + ",";
+                    strValue = picturePath +",";
+                }else if (key.equals(IdentifierChartCEnum._09)) {
                     strChannel = strChannel + key.getHexStr() + ",";
                     strValue = strValue + completeMessage.getAllElementInfoGroup().get(key) + ",";
                 } else if(key.equals(IdentifierChartCEnum._45)){

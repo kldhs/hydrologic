@@ -86,7 +86,6 @@ public class NettyServerHandler extends ChannelHandlerAdapter {
                     }
                 } catch (Exception e) {
                     LogUtil.nettyPrintStackTrace("异常",e);
-                    e.printStackTrace();
                 }
                 return null;
             }

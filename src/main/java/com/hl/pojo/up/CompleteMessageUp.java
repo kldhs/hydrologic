@@ -4,6 +4,7 @@ import com.hl.enums.IdentifierChartCEnum;
 
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.TreeMap;
 
 /**
  * @author xs
@@ -29,7 +30,7 @@ public class CompleteMessageUp implements Cloneable {
     /**
      * 所有包的数据
      */
-    private HashMap<String, HexBcdM1234Up> allHexBcdM1234Up;
+    private TreeMap<String, HexBcdM1234Up> allHexBcdM1234Up;
 
     /**
      * 每个遥测站的包总数
@@ -91,11 +92,11 @@ public class CompleteMessageUp implements Cloneable {
         this.telemetryStationAddr = telemetryStationAddr;
     }
 
-    public HashMap<String, HexBcdM1234Up> getAllHexBcdM1234Up() {
+    public TreeMap<String, HexBcdM1234Up> getAllHexBcdM1234Up() {
         return allHexBcdM1234Up;
     }
 
-    public void setAllHexBcdM1234Up(HashMap<String, HexBcdM1234Up> allHexBcdM1234Up) {
+    public void setAllHexBcdM1234Up(TreeMap<String, HexBcdM1234Up> allHexBcdM1234Up) {
         this.allHexBcdM1234Up = allHexBcdM1234Up;
     }
 

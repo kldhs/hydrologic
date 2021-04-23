@@ -9,6 +9,7 @@ import com.hl.util.CRC16Util;
 
 import java.util.HashMap;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * @author xs
@@ -18,11 +19,27 @@ public class HandleUtil {
     /**
      * 拼接完整报文
      */
-    public static String jointMessage(HashMap<String, HexBcdM1234Up> allHexBcdM1234Up) {
+    public static String jointMessage(TreeMap<String, HexBcdM1234Up> allHexBcdM1234Up) {
         StringBuilder messageStr = new StringBuilder(" ");
-        for (HexBcdM1234Up hexBcdM1234Up : allHexBcdM1234Up.values()) {
-            messageStr = messageStr.append(hexBcdM1234Up.getHexBcdM1234UpMessageText().getElementInfoGroupStr());
+        //如果是图片信息
+        if(allHexBcdM1234Up.get(
+                //String.valueOf(
+                        allHexBcdM1234Up.keySet().size()
+                //)
+        )
+                .getHexBcdM1234UpMessageText().getElementInfoGroupStr()
+                .substring(0,2)
+                .equals(IdentifierChartCEnum.F3.getHexStr())){
+            for (HexBcdM1234Up hexBcdM1234Up : allHexBcdM1234Up.values()) {
+                messageStr = messageStr.append(hexBcdM1234Up.getHexBcdM1234UpMessageText().getElementInfoGroupStr().substring(2));
+            }
+            messageStr =new StringBuilder(IdentifierChartCEnum.F3.getHexStr()).append(messageStr);
+        }else{
+            for (HexBcdM1234Up hexBcdM1234Up : allHexBcdM1234Up.values()) {
+                messageStr = messageStr.append(hexBcdM1234Up.getHexBcdM1234UpMessageText().getElementInfoGroupStr());
+            }
         }
+
         return String.valueOf(messageStr).trim();
     }
 
@@ -39,7 +56,7 @@ public class HandleUtil {
     /**
      * 获取M2模式下当前报文序列
      */
-    public static String getM2CurrentPackageNumber(HashMap<String, HexBcdM1234Up> allHexBcdM1234Up) {
+    public static String getM2CurrentPackageNumber(TreeMap<String, HexBcdM1234Up> allHexBcdM1234Up) {
         String m2CurrentPackageNumber = "0";
         Set<String> keys = allHexBcdM1234Up.keySet();
         m2CurrentPackageNumber = String.valueOf(keys.size() + 1);
@@ -50,7 +67,7 @@ public class HandleUtil {
      * 判断是不是接收到完整报文之后重新开始接收的第一段报文
      */
     public static boolean checkRestartAcceptMessage(CompleteMessageUp completeMessage) {
-        HashMap<String, HexBcdM1234Up> allHexBcdM1234Up = completeMessage.getAllHexBcdM1234Up();
+        TreeMap<String, HexBcdM1234Up> allHexBcdM1234Up = completeMessage.getAllHexBcdM1234Up();
         if (allHexBcdM1234Up == null) {
             return true;
         } else {
@@ -67,7 +84,7 @@ public class HandleUtil {
      * 判断是不是接收完了所有报文
      */
     public static boolean checkAcceptMessageOver(CompleteMessageUp completeMessage, TdDeviceInfo tdDeviceInfo) {
-        HashMap<String, HexBcdM1234Up> allHexBcdM1234Up = completeMessage.getAllHexBcdM1234Up();
+        TreeMap<String, HexBcdM1234Up> allHexBcdM1234Up = completeMessage.getAllHexBcdM1234Up();
         if (!"M2".equals(tdDeviceInfo.getDevCodeschema())) {
             if (allHexBcdM1234Up == null) {
                 return false;
@@ -129,14 +146,17 @@ public class HandleUtil {
      * 处理要素信息组信息
      */
     public static HashMap handleElementInfoGroupStr(HashMap elementInfoGroup, String elementInfoGroupStr) {
-        //如果是闸门状态，单独加的，可能不符合协议
-        if (elementInfoGroupStr.substring(0, 2).equals(IdentifierChartCEnum._09.getHexStr())) {
+        //如果是图片
+        if(elementInfoGroupStr.substring(0, 2).equals(IdentifierChartCEnum.F3.getHexStr())) {
+            elementInfoGroup.put(IdentifierChartCEnum.getEnumByObj(elementInfoGroupStr.substring(0, 2)), elementInfoGroupStr.substring(2, elementInfoGroupStr.length()));
+            elementInfoGroupStr = elementInfoGroupStr.substring(elementInfoGroupStr.length());
+        }else if (elementInfoGroupStr.substring(0, 2).equals(IdentifierChartCEnum._09.getHexStr())) {
+            //如果是闸门状态，单独加的，可能不符合协议
             int numLength = Integer.valueOf(elementInfoGroupStr.substring(4, 6));
             String a = "";
             for (int i = 1; i <= numLength; i++) {
                 String b = elementInfoGroupStr.substring(6, 6 + numLength * 4).substring((i - 1) * 4, i * 4);
                 a = a + Integer.valueOf(b.substring(0, 2)) + "." + Integer.valueOf(b.substring(2, 4)) + "|";
-
             }
             a = a.substring(0, a.length() - 1);
             elementInfoGroup.put(IdentifierChartCEnum.getEnumByObj(elementInfoGroupStr.substring(0, 2)), a);

@@ -7,7 +7,7 @@ import com.hl.enums.FunctionCodeEnum;
  * @date 2019/11/27
  * 单次接收的报文
  */
-public class HexBcdM1234Up extends BaseMessageUp{
+public class HexBcdM1234Up extends BaseMessageUp {
     /**
      * 完整报文
      */

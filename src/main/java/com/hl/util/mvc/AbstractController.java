@@ -1,6 +1,5 @@
 package com.hl.util.mvc;
 
-import org.apache.shiro.SecurityUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.servlet.http.HttpServletRequest;

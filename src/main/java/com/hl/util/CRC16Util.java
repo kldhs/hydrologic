@@ -370,6 +370,9 @@ public class CRC16Util {
     }
 
     public static void main(String[] args) {
+        byte[] bytes = new byte[]{1};
+        String messageHex = CRC16Util.bytesToHex(bytes).toUpperCase();
+
         String aa= CRC16Util.getCRCCode("7E7E011802832372000032002B020568201125180042F1F1180283237248F0F02011251800201900030026190188303923000035103812128103");
         System.out.println(aa);
     }

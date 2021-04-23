@@ -75,6 +75,7 @@ public class LogUtil {
     public synchronized static void nettyError(String msg) {
         netty.error(msg);
     }
+
     public synchronized static void nettyPrintStackTrace(String msg,Exception e) {
         netty.error(msg,e);
     }

@@ -1,6 +1,5 @@
 package com.hl.pojo;
 
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -11,9 +10,15 @@ import org.springframework.stereotype.Component;
  */
 @PropertySource(value = "classpath:/configs.properties")
 @Component
-@Getter
 public class ConfigsPoJo {
     @Value("${placeImagesPath}")
     private String placeImagesPath;
 
+    public String getPlaceImagesPath() {
+        return placeImagesPath;
+    }
+
+    public void setPlaceImagesPath(String placeImagesPath) {
+        this.placeImagesPath = placeImagesPath;
+    }
 }

@@ -22,11 +22,7 @@ public class HandleUtil {
     public static String jointMessage(TreeMap<String, HexBcdM1234Up> allHexBcdM1234Up) {
         StringBuilder messageStr = new StringBuilder(" ");
         //如果是图片信息
-        if(allHexBcdM1234Up.get(
-                //String.valueOf(
-                        allHexBcdM1234Up.keySet().size()
-                //)
-        )
+        if(allHexBcdM1234Up.get(String.valueOf( allHexBcdM1234Up.keySet().size() ))
                 .getHexBcdM1234UpMessageText().getElementInfoGroupStr()
                 .substring(0,2)
                 .equals(IdentifierChartCEnum.F3.getHexStr())){

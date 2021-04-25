@@ -1,6 +1,5 @@
 package com.hl.netty.upmessagehandler;
 
-import com.hl.HyStart;
 import com.hl.dao.entity.TdDeviceInfo;
 import com.hl.enums.*;
 import com.hl.exception.*;
@@ -12,12 +11,12 @@ import com.hl.pojo.up.HexBcdM1234MessageTextUp;
 import com.hl.pojo.up.HexBcdM1234Up;
 import com.hl.service.TdDevDataService;
 import com.hl.service.TdDeviceInfoService;
-import com.hl.util.CRC16Util;
-import com.hl.util.LogUtil;
-import com.hl.util.SpringBootUtil;
-import com.hl.util.SystemInit;
+import com.hl.util.*;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * @author xs
@@ -287,7 +286,7 @@ public class HandleFullMessage {
             if (HandleUtil.checkRestartAcceptMessage(completeMessageUp)) {
                 //设置接收第一段报文的时间
                 completeMessageUp.setTime(System.currentTimeMillis());
-                completeMessageUp.setAllHexBcdM1234Up(new HashMap<String, HexBcdM1234Up>());
+                completeMessageUp.setAllHexBcdM1234Up(new TreeMap<String, HexBcdM1234Up>());
             }
             //放入当前报文
             (hexBcdM1234Up).setHexBcdM1234UpMessageText(hexBcdM1234UpMessageText);
@@ -301,8 +300,15 @@ public class HandleFullMessage {
             if (HandleUtil.checkAcceptMessageOver(completeMessageUp, tdDeviceInfo)) {
                 completeMessageUp.setAllElementInfoGroupStr(HandleUtil.jointMessage(completeMessageUp.getAllHexBcdM1234Up()));
                 completeMessageUp.setAllElementInfoGroup(HandleUtil.handleElementInfoGroupStr(new HashMap(), completeMessageUp.getAllElementInfoGroupStr()));
+                String aa = "";
+                for (IdentifierChartCEnum identifierChartCEnum : completeMessageUp.getAllElementInfoGroup().keySet()) {
+                    if (identifierChartCEnum.equals(IdentifierChartCEnum.F3)) {
+                        String dateNowStr = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
+                        aa = HandlePicture.writePicture(completeMessageUp.getAllElementInfoGroup().get(identifierChartCEnum).getBytes(), dateNowStr + tdDeviceInfo.getDevSn() + ".jpg");
+                    }
+                }
                 completeMessageUpCopy = completeMessageUp.clone();
-                tdDevDataService.insertTdDevDataByMyself(completeMessageUpCopy);
+                tdDevDataService.insertTdDevDataByMyself(completeMessageUpCopy,aa);
                 //下行回复
                 creatCompleteMessageDownStr = creatCompleteMessageDown(completeMessageUp, hexBcdM1234Up, codeschema);
                 completeMessageUp.clearAllHexBcdM1234Up();
